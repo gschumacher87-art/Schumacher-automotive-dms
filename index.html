@@ -5,6 +5,7 @@
 <title>Schumacher Automotive DMS</title>
 
 <style>
+
 body{
 font-family:Arial;
 background:#0b1220;
@@ -19,49 +20,75 @@ font-size:22px;
 font-weight:bold;
 display:flex;
 justify-content:space-between;
-align-items:center;
+}
+
+.tabs{
+display:flex;
+background:#1f2937;
+}
+
+.tab{
+padding:12px;
+cursor:pointer;
+}
+
+.tab.active{
+background:#2563eb;
+}
+
+.search{
+padding:10px;
+background:#111827;
+}
+
+input{
+padding:8px;
+width:95%;
+}
+
+.job{
+background:#1f2937;
+margin:10px;
+padding:15px;
+border-radius:8px;
 }
 
 button{
 background:#2563eb;
 color:white;
 border:none;
-padding:10px 15px;
-margin:5px;
+padding:8px;
+margin:4px;
 border-radius:6px;
 }
 
-.job{
-background:#1f2937;
-padding:15px;
-margin:10px;
-border-radius:8px;
-}
-
-input{
-padding:8px;
-margin:5px;
-width:95%;
-}
-
 .total{
-font-size:18px;
 color:#22c55e;
 font-weight:bold;
 }
 
 .small{
-font-size:12px;
 color:#9ca3af;
+font-size:12px;
 }
-</style>
-</head>
 
+</style>
+
+</head>
 <body>
 
 <div class="header">
 Schumacher Automotive DMS
 <button onclick="newJob()">+ New Job</button>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab('open')">Open Jobs</div>
+<div class="tab" onclick="showTab('complete')">Completed</div>
+</div>
+
+<div class="search">
+<input id="searchBox" placeholder="Search customer, reg, vehicle..." onkeyup="render()">
 </div>
 
 <div id="jobs"></div>
@@ -70,9 +97,23 @@ Schumacher Automotive DMS
 
 let jobs = JSON.parse(localStorage.getItem("jobs") || "[]")
 
+let currentTab="open"
+
 function save(){
 localStorage.setItem("jobs",JSON.stringify(jobs))
 render()
+}
+
+function showTab(tab){
+
+currentTab=tab
+
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
+
+event.target.classList.add("active")
+
+render()
+
 }
 
 function newJob(){
@@ -91,79 +132,92 @@ reg,
 parts:[],
 labour:0,
 clockStart:null,
-total:0,
-status:"In Progress"
+status:"open"
 })
 
 save()
+
 }
 
 function clockOn(id){
+
 let job = jobs.find(j=>j.id==id)
-job.clockStart = Date.now()
+
+job.clockStart=Date.now()
+
 save()
+
 }
 
 function clockOff(id){
-let job = jobs.find(j=>j.id==id)
+
+let job=jobs.find(j=>j.id==id)
 
 if(job.clockStart){
-let time = (Date.now()-job.clockStart)/3600000
-job.labour += time * 120
-job.clockStart = null
+
+let hours=(Date.now()-job.clockStart)/3600000
+
+job.labour+=hours*120
+
+job.clockStart=null
+
 }
 
 save()
+
 }
 
 function addPart(id){
 
-let name = prompt("Part name")
-let price = parseFloat(prompt("Price"))
+let name=prompt("Part name")
+
+let price=parseFloat(prompt("Price"))
 
 if(!name || !price) return
 
-let job = jobs.find(j=>j.id==id)
+let job=jobs.find(j=>j.id==id)
+
 job.parts.push({name,price})
 
 save()
-}
-
-function total(job){
-
-let partsTotal = job.parts.reduce((a,b)=>a+b.price,0)
-return partsTotal + job.labour
 
 }
 
 function complete(id){
 
-let job = jobs.find(j=>j.id==id)
-job.status="Complete"
+let job=jobs.find(j=>j.id==id)
+
+job.status="complete"
+
 save()
+
+}
+
+function total(job){
+
+let parts=job.parts.reduce((a,b)=>a+b.price,0)
+
+return parts+job.labour
 
 }
 
 function printJob(id){
 
-let job = jobs.find(j=>j.id==id)
+let job=jobs.find(j=>j.id==id)
 
 let w=window.open()
 
 w.document.write("<h1>Schumacher Automotive</h1>")
-w.document.write("<h2>Invoice</h2>")
-w.document.write("Customer: "+job.customer+"<br>")
-w.document.write("Vehicle: "+job.vehicle+"<br>")
-w.document.write("Reg: "+job.reg+"<br><br>")
+w.document.write("Customer:"+job.customer+"<br>")
+w.document.write("Vehicle:"+job.vehicle+"<br>")
+w.document.write("Reg:"+job.reg+"<br>")
 
-w.document.write("<h3>Parts</h3>")
 job.parts.forEach(p=>{
 w.document.write(p.name+" $"+p.price+"<br>")
 })
 
-w.document.write("<h3>Labour: $"+job.labour.toFixed(2)+"</h3>")
-
-w.document.write("<h2>Total: $"+total(job).toFixed(2)+"</h2>")
+w.document.write("Labour:$"+job.labour.toFixed(2)+"<br>")
+w.document.write("<h2>Total:$"+total(job).toFixed(2)+"</h2>")
 
 w.print()
 
@@ -171,18 +225,29 @@ w.print()
 
 function render(){
 
+let search=document.getElementById("searchBox").value.toLowerCase()
+
 let html=""
 
-jobs.reverse().forEach(job=>{
+jobs
+.filter(job=>job.status==currentTab)
+.filter(job=>
+job.customer.toLowerCase().includes(search) ||
+job.reg.toLowerCase().includes(search) ||
+job.vehicle.toLowerCase().includes(search)
+)
+.reverse()
+.forEach(job=>{
 
 html+=`
 <div class="job">
 
 <b>${job.customer}</b><br>
-${job.vehicle} - ${job.reg}<br>
+
+${job.vehicle} - ${job.reg}
 
 <div class="small">
-Status: ${job.status}
+${job.status}
 </div>
 
 <div class="total">
@@ -201,6 +266,7 @@ $${total(job).toFixed(2)}
 
 </div>
 `
+
 })
 
 document.getElementById("jobs").innerHTML=html
