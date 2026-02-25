@@ -2,94 +2,114 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Schumacher Automotive Workshop</title>
+<title>Schumacher Automotive DMS</title>
 
 <style>
-body {
-font-family: Arial;
-margin: 0;
-background: #f4f6f8;
+body{
+font-family:Arial;
+margin:0;
+background:#f0f2f5;
 }
 
-.header {
-background: #1f3a5f;
-color: white;
-padding: 15px;
-font-size: 22px;
+.container{
+display:flex;
 }
 
-.container {
-padding: 15px;
+.sidebar{
+width:220px;
+background:#1f2a38;
+color:white;
+height:100vh;
+padding:20px;
 }
 
-.card {
-background: white;
-padding: 15px;
-margin-bottom: 15px;
-border-radius: 8px;
-box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.sidebar button{
+width:100%;
+padding:12px;
+margin-bottom:10px;
+background:none;
+border:none;
+color:white;
+text-align:left;
+cursor:pointer;
+font-size:16px;
 }
 
-button {
-background: #1f3a5f;
-color: white;
-border: none;
-padding: 10px;
-width: 100%;
-margin-top: 5px;
-border-radius: 5px;
+.sidebar button:hover{
+background:#2e3d52;
 }
 
-input {
-width: 100%;
-padding: 10px;
-margin-top: 5px;
+.main{
+flex:1;
+padding:20px;
 }
 
-.customer {
-padding: 10px;
-background: #e9eef5;
-margin-top: 5px;
-border-radius: 5px;
-cursor: pointer;
+.page{
+display:none;
 }
+
+.active{
+display:block;
+}
+
+.calendar{
+display:grid;
+grid-template-columns: repeat(7,1fr);
+gap:6px;
+}
+
+.day{
+background:white;
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+
+.day:hover{
+background:#e3ecff;
+}
+
 </style>
-
 </head>
-<body>
 
-<div class="header">
-Schumacher Automotive Workshop
-</div>
+<body>
 
 <div class="container">
 
-<div class="card">
-<h3>Add Customer</h3>
+<div class="sidebar">
 
-<input id="customerName" placeholder="Customer Name">
-<input id="customerPhone" placeholder="Phone">
+<h2>Schumacher Automotive</h2>
 
-<button onclick="addCustomer()">Add Customer</button>
-
-<h3>Customers</h3>
-<div id="customerList"></div>
+<button onclick="showPage('dashboard')">Calendar</button>
+<button onclick="showPage('technicians')">Technicians</button>
 
 </div>
 
-<div id="customerProfile" class="card" style="display:none;">
-<h3 id="profileName"></h3>
+<div class="main">
 
-<h4>Add Vehicle</h4>
+<div id="dashboard" class="page active">
 
-<input id="rego" placeholder="Rego">
-<input id="make" placeholder="Make">
-<input id="model" placeholder="Model">
+<h2>Workshop Calendar</h2>
 
-<button onclick="addVehicle()">Add Vehicle</button>
+<button onclick="prevMonth()">◀</button>
+<span id="monthLabel"></span>
+<button onclick="nextMonth()">▶</button>
 
-<h4>Vehicles</h4>
-<div id="vehicleList"></div>
+<div id="calendar" class="calendar"></div>
+
+</div>
+
+<div id="technicians" class="page">
+
+<h2>Technicians</h2>
+
+<input id="techName" placeholder="Technician Name">
+<button onclick="addTech()">Add Technician</button>
+
+<div id="techList"></div>
+
+</div>
 
 </div>
 
@@ -97,107 +117,199 @@ Schumacher Automotive Workshop
 
 <script>
 
-let customers = JSON.parse(localStorage.getItem("customers")) || [];
-let selectedCustomer = null;
+let currentDate = new Date();
 
-function save(){
-localStorage.setItem("customers", JSON.stringify(customers));
+let technicians =
+JSON.parse(localStorage.getItem("technicians")) || [];
+
+let calendarData =
+JSON.parse(localStorage.getItem("calendarData")) || {};
+
+function saveAll(){
+
+localStorage.setItem("technicians",
+JSON.stringify(technicians));
+
+localStorage.setItem("calendarData",
+JSON.stringify(calendarData));
+
 }
 
-function addCustomer(){
+function showPage(page){
 
-let name = document.getElementById("customerName").value;
-let phone = document.getElementById("customerPhone").value;
+document.querySelectorAll(".page")
+.forEach(p=>p.classList.remove("active"));
+
+document.getElementById(page)
+.classList.add("active");
+
+}
+
+function addTech(){
+
+let name =
+document.getElementById("techName").value;
 
 if(!name) return;
 
-customers.push({
-name,
-phone,
-vehicles:[]
-});
+technicians.push({name});
 
-save();
-renderCustomers();
+document.getElementById("techName").value="";
 
-}
+saveAll();
 
-function renderCustomers(){
-
-let list = document.getElementById("customerList");
-list.innerHTML = "";
-
-customers.forEach((c,index)=>{
-
-let div = document.createElement("div");
-
-div.className="customer";
-
-div.innerHTML = c.name + " - " + c.phone;
-
-div.onclick = ()=>openCustomer(index);
-
-list.appendChild(div);
-
-});
+renderTechs();
 
 }
 
-function openCustomer(index){
+function renderTechs(){
 
-selectedCustomer = index;
-
-let c = customers[index];
-
-document.getElementById("customerProfile").style.display="block";
-
-document.getElementById("profileName").innerHTML = c.name;
-
-renderVehicles();
-
-}
-
-function addVehicle(){
-
-let rego = document.getElementById("rego").value;
-let make = document.getElementById("make").value;
-let model = document.getElementById("model").value;
-
-customers[selectedCustomer].vehicles.push({
-rego,
-make,
-model
-});
-
-save();
-renderVehicles();
-
-}
-
-function renderVehicles(){
-
-let list = document.getElementById("vehicleList");
+let list =
+document.getElementById("techList");
 
 list.innerHTML="";
 
-customers[selectedCustomer].vehicles.forEach(v=>{
+technicians.forEach((t,i)=>{
 
-let div = document.createElement("div");
-
-div.className="customer";
-
-div.innerHTML =
-v.rego + " - " +
-v.make + " " +
-v.model;
-
-list.appendChild(div);
+list.innerHTML+=`
+<div>
+${t.name}
+<button onclick="removeTech(${i})">Remove</button>
+</div>
+`;
 
 });
 
 }
 
-renderCustomers();
+function removeTech(i){
+
+technicians.splice(i,1);
+
+saveAll();
+
+renderTechs();
+
+}
+
+function renderCalendar(){
+
+let cal =
+document.getElementById("calendar");
+
+cal.innerHTML="";
+
+let year =
+currentDate.getFullYear();
+
+let month =
+currentDate.getMonth();
+
+document.getElementById("monthLabel")
+.innerHTML =
+currentDate.toLocaleString('default',
+{month:'long'})+" "+year;
+
+let days =
+new Date(year,month+1,0).getDate();
+
+for(let d=1; d<=days; d++){
+
+let key =
+year+"-"+month+"-"+d;
+
+if(!calendarData[key]){
+
+calendarData[key]={
+hours:8,
+jobs:[]
+};
+
+}
+
+let used =
+calendarData[key].jobs
+.reduce((t,j)=>t+j.hours,0);
+
+let div =
+document.createElement("div");
+
+div.className="day";
+
+div.innerHTML=`
+<b>${d}</b><br>
+${used} / ${calendarData[key].hours} hrs
+`;
+
+div.onclick=()=>{
+openDay(key);
+};
+
+cal.appendChild(div);
+
+}
+
+saveAll();
+
+}
+
+function openDay(key){
+
+let day = calendarData[key];
+
+let newHours =
+prompt("Available hours:",day.hours);
+
+if(newHours!=null)
+day.hours=Number(newHours);
+
+let job =
+prompt("Job description:");
+
+if(!job) return;
+
+let hours =
+Number(prompt("Job hours:"));
+
+let techNames =
+technicians.map(t=>t.name).join(",");
+
+let tech =
+prompt("Assign technician:"+techNames);
+
+day.jobs.push({
+name:job,
+hours:hours,
+tech:tech
+});
+
+saveAll();
+
+renderCalendar();
+
+}
+
+function prevMonth(){
+
+currentDate.setMonth(
+currentDate.getMonth()-1);
+
+renderCalendar();
+
+}
+
+function nextMonth(){
+
+currentDate.setMonth(
+currentDate.getMonth()+1);
+
+renderCalendar();
+
+}
+
+renderCalendar();
+
+renderTechs();
 
 </script>
 
