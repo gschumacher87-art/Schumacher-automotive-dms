@@ -2,265 +2,218 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schumacher Automotive Workshop</title>
+<title>Schumacher Automotive DMS</title>
 
 <style>
 
 body{
 font-family:Arial;
 margin:0;
+display:flex;
 background:#f4f6f8;
 }
 
-.header{
-background:#2c3e50;
+.sidebar{
+width:220px;
+background:#1f2937;
 color:white;
 padding:20px;
-font-size:22px;
+height:100vh;
 }
 
-.container{
-padding:20px;
+.sidebar h2{
+margin-top:0;
 }
 
-.card{
-background:white;
-padding:20px;
-margin-bottom:20px;
-border-radius:8px;
-}
-
-input, button{
+.sidebar button{
 width:100%;
 padding:12px;
 margin-top:10px;
-border-radius:6px;
-border:1px solid #ccc;
-font-size:16px;
-}
-
-button{
-background:#2c3e50;
+background:#374151;
 color:white;
 border:none;
+text-align:left;
 }
 
-button:hover{
-background:#34495e;
+.main{
+flex:1;
+padding:20px;
 }
 
-.customer{
-padding:15px;
-background:#e9ecef;
-margin-top:8px;
+.calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:10px;
+}
+
+.day{
+background:white;
+padding:10px;
 border-radius:8px;
+min-height:80px;
 cursor:pointer;
+box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+
+.day:hover{
+background:#e5e7eb;
 }
 
 .job{
-padding:10px;
-background:#f1f1f1;
-margin-top:5px;
-border-radius:6px;
-}
-
-.backBtn{
-background:#777;
-margin-top:15px;
+font-size:12px;
+background:#2563eb;
+color:white;
+padding:2px;
+margin-top:2px;
+border-radius:4px;
 }
 
 </style>
 </head>
-
 <body>
 
-<div class="header">
-Schumacher Automotive Workshop
-</div>
+<div class="sidebar">
+<h2>Schumacher Automotive</h2>
 
-<div class="container">
-
-<div class="card">
-
-<h3>Add Customer</h3>
-
-<input id="customerName" placeholder="Customer Name">
-<input id="customerPhone" placeholder="Phone">
-
-<button onclick="addCustomer()">Add Customer</button>
+<button onclick="showCalendar()">Calendar</button>
 
 </div>
 
+<div class="main">
 
-<div class="card">
+<h2 id="monthTitle"></h2>
 
-<h3>Customers</h3>
-
-<div id="customerList"></div>
-
-<div id="customerProfile" style="display:none;">
-
-<h3 id="profileName"></h3>
-
-<input id="jobInput" placeholder="Job Description">
-
-<button onclick="addJob()">Add Job</button>
-
-<h4>Job History</h4>
-
-<div id="jobHistory"></div>
-
-<button class="backBtn" onclick="closeProfile()">
-Back to Customers
-</button>
+<div class="calendar" id="calendar"></div>
 
 </div>
-
-</div>
-
-</div>
-
 
 <script>
 
-let customers =
-JSON.parse(localStorage.getItem("customers")) || [];
+let currentDate = new Date();
 
-let activeCustomer = null;
+let calendarData = JSON.parse(localStorage.getItem("calendarData")) || {};
 
+let technicians = JSON.parse(localStorage.getItem("technicians")) || [
+{name:"Tech 1"},
+{name:"Tech 2"},
+{name:"Tech 3"}
+];
 
 function save(){
 
-localStorage.setItem("customers",
-JSON.stringify(customers));
+localStorage.setItem("calendarData",JSON.stringify(calendarData));
 
 }
 
+function showCalendar(){
 
-function addCustomer(){
+renderCalendar();
 
-let name =
-document.getElementById("customerName").value;
+}
 
-let phone =
-document.getElementById("customerPhone").value;
+function renderCalendar(){
 
-if(!name) return;
+let cal = document.getElementById("calendar");
 
-customers.push({
+cal.innerHTML="";
 
-name:name,
-phone:phone,
+let year = currentDate.getFullYear();
+let month = currentDate.getMonth();
+
+document.getElementById("monthTitle").innerHTML =
+currentDate.toLocaleString('default',{month:'long'})+" "+year;
+
+let days = new Date(year,month+1,0).getDate();
+
+for(let d=1; d<=days; d++){
+
+let key = year+"-"+month+"-"+d;
+
+if(!calendarData[key]){
+
+calendarData[key]={
+hours:8,
 jobs:[]
+};
+
+}
+
+let day = calendarData[key];
+
+let used = 0;
+
+day.jobs.forEach(j=> used+=j.hours);
+
+let div = document.createElement("div");
+
+div.className="day";
+
+let jobsHTML="";
+
+day.jobs.forEach((j,i)=>{
+
+jobsHTML += `<div class="job">${j.name} (${j.hours}h) - ${j.tech}</div>`;
 
 });
+
+div.innerHTML=
+"<b>"+d+"</b><br>"+
+used+" / "+day.hours+" hrs"+
+jobsHTML;
+
+div.onclick=function(){
+
+openDay(key);
+
+};
+
+cal.appendChild(div);
+
+}
 
 save();
 
-document.getElementById("customerName").value="";
-document.getElementById("customerPhone").value="";
+}
 
-renderCustomers();
+function openDay(key){
+
+let day = calendarData[key];
+
+let hours = prompt("Available hours:",day.hours);
+
+if(hours!==null){
+
+day.hours = Number(hours);
 
 }
 
+let jobName = prompt("Job name:");
 
-function renderCustomers(){
+if(jobName){
 
-let list =
-document.getElementById("customerList");
+let jobHours = Number(prompt("Job hours:"));
 
-list.innerHTML="";
+let techList = technicians.map(t=>t.name).join(", ");
 
-customers.forEach((customer,index)=>{
+let tech = prompt("Assign technician: "+techList);
 
-list.innerHTML +=
-`
-<div class="customer"
-onclick="openCustomer(${index})">
+day.jobs.push({
 
-${customer.name} - ${customer.phone}
-
-</div>
-`;
+name:jobName,
+hours:jobHours,
+tech:tech
 
 });
 
 }
-
-
-function openCustomer(index){
-
-activeCustomer=index;
-
-document.getElementById("customerList").style.display="none";
-
-document.getElementById("customerProfile").style.display="block";
-
-document.getElementById("profileName").innerText =
-customers[index].name;
-
-renderJobs();
-
-}
-
-
-function closeProfile(){
-
-document.getElementById("customerProfile").style.display="none";
-
-document.getElementById("customerList").style.display="block";
-
-}
-
-
-function addJob(){
-
-let text =
-document.getElementById("jobInput").value;
-
-if(!text) return;
-
-customers[activeCustomer].jobs.push({
-
-description:text,
-date:new Date().toLocaleDateString()
-
-});
 
 save();
 
-document.getElementById("jobInput").value="";
-
-renderJobs();
+renderCalendar();
 
 }
 
-
-function renderJobs(){
-
-let history =
-document.getElementById("jobHistory");
-
-history.innerHTML="";
-
-customers[activeCustomer].jobs.forEach(job=>{
-
-history.innerHTML +=
-`
-<div class="job">
-
-${job.date} — ${job.description}
-
-</div>
-`;
-
-});
-
-}
-
-
-renderCustomers();
+renderCalendar();
 
 </script>
 
