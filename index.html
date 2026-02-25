@@ -2,150 +2,135 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Schumacher Automotive Workshop</title>
+<title>Schumacher Automotive DMS</title>
 
 <style>
 body{
 font-family:Arial;
-background:#f0f2f5;
 margin:0;
+background:#f4f6f8;
 }
 
-.header{
-background:#1e3a5f;
+.sidebar{
+width:220px;
+background:#1f2937;
 color:white;
-padding:15px;
-font-size:22px;
+height:100vh;
+position:fixed;
+padding-top:20px;
 }
 
-.container{
+.sidebar h2{
+text-align:center;
+}
+
+.sidebar button{
+width:100%;
 padding:15px;
+border:none;
+background:none;
+color:white;
+text-align:left;
+font-size:16px;
+}
+
+.sidebar button:hover{
+background:#374151;
+}
+
+.main{
+margin-left:220px;
+padding:20px;
 }
 
 .card{
 background:white;
 padding:15px;
-margin-bottom:10px;
+margin:10px 0;
 border-radius:8px;
-box-shadow:0 2px 4px rgba(0,0,0,0.2);
 }
 
-button{
-background:#1e3a5f;
-color:white;
-border:none;
-padding:10px;
-margin:5px 0;
-border-radius:5px;
-width:100%;
+input, select, button{
+padding:8px;
+margin:5px;
 }
 
-input{
-width:100%;
-padding:10px;
-margin:5px 0;
+.calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:5px;
 }
 
-.list-item{
+.day{
+background:white;
 padding:10px;
-border-bottom:1px solid #ddd;
+border-radius:6px;
+min-height:80px;
 cursor:pointer;
 }
 
-.list-item:hover{
-background:#eef;
-}
-
-.active{
-background:#cce5ff;
+.techCard{
+background:#e5e7eb;
+padding:5px;
+margin:3px;
+border-radius:4px;
+font-size:12px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-Schumacher Automotive Workshop
+<div class="sidebar">
+<h2>Schumacher Automotive</h2>
+
+<button onclick="show('dashboard')">Dashboard</button>
+<button onclick="show('customers')">Customers</button>
+<button onclick="show('jobs')">Jobs</button>
+<button onclick="show('technicians')">Technicians</button>
+
 </div>
 
-<div class="container">
+<div class="main">
 
-<!-- SEARCH CUSTOMER -->
-<div class="card">
-<h3>Customer Search</h3>
-
-<input id="searchBox" placeholder="Search customer name"
-oninput="searchCustomer()">
-
-<div id="customerResults"></div>
-
-<button onclick="showAddCustomer()">Add Customer</button>
+<div id="dashboard">
+<h2>Workshop Calendar</h2>
+<div id="calendar" class="calendar"></div>
 </div>
 
-<!-- ADD CUSTOMER -->
-<div class="card" id="addCustomerBox" style="display:none;">
-<h3>Add Customer</h3>
+<div id="customers" style="display:none">
+<h2>Customers</h2>
 
-<input id="custName" placeholder="Name">
-<input id="custPhone" placeholder="Phone">
+<input id="customerName" placeholder="Customer Name">
+<button onclick="addCustomer()">Add</button>
 
-<button onclick="addCustomer()">Save</button>
+<div id="customerList"></div>
 </div>
 
-<!-- CUSTOMER PROFILE -->
-<div class="card" id="customerProfile" style="display:none;">
-<h3 id="profileName"></h3>
-<p id="profilePhone"></p>
+<div id="jobs" style="display:none">
+<h2>Create Job</h2>
 
-<button onclick="showAddJob()">Add Job</button>
+<select id="jobCustomer"></select>
+<select id="jobTech"></select>
 
-<h4>Job History</h4>
+<input id="jobHours" type="number" placeholder="Hours">
+
+<input id="jobDate" type="date">
+
+<button onclick="createJob()">Create Job</button>
+
 <div id="jobList"></div>
 </div>
 
-<!-- ADD JOB -->
-<div class="card" id="addJobBox" style="display:none;">
-<h3>Add Job</h3>
+<div id="technicians" style="display:none">
 
-<input id="jobVehicle" placeholder="Vehicle">
-<input id="jobRego" placeholder="Rego">
-<input id="jobDesc" placeholder="Job Description">
+<h2>Technicians</h2>
 
-<button onclick="addJob()">Create Job</button>
-</div>
+<input id="techName" placeholder="Technician Name">
+<input id="techHours" type="number" placeholder="Default Hours">
+<button onclick="addTech()">Add Technician</button>
 
-<!-- JOB CARD -->
-<div class="card" id="jobCard" style="display:none;">
-
-<h3 id="jobTitle"></h3>
-
-<p>Status: <span id="jobStatus"></span></p>
-
-<p>Time: <span id="jobTime">0</span> mins</p>
-
-<button onclick="clockOn()">Clock On</button>
-<button onclick="clockOff()">Clock Off</button>
-
-<h4>Parts</h4>
-
-<div id="jobParts"></div>
-
-<select id="partsDropdown"></select>
-
-<button onclick="addPartToJob()">Add Part</button>
-
-</div>
-
-<!-- PARTS DATABASE -->
-<div class="card">
-<h3>Parts Database</h3>
-
-<input id="partName" placeholder="Part Name">
-<input id="partPrice" placeholder="Price">
-
-<button onclick="addPart()">Add Part</button>
-
-<div id="partsList"></div>
+<div id="techList"></div>
 
 </div>
 
@@ -153,244 +138,229 @@ oninput="searchCustomer()">
 
 <script>
 
-let customers=[]
-let parts=[]
-let selectedCustomer=null
-let selectedJob=null
-let clockTimer=null
+let customers=JSON.parse(localStorage.getItem("customers")||"[]");
+let technicians=JSON.parse(localStorage.getItem("technicians")||"[]");
+let jobs=JSON.parse(localStorage.getItem("jobs")||"[]");
+let techHoursOverride=JSON.parse(localStorage.getItem("techHoursOverride")||"{}");
 
-function save(){
-localStorage.setItem("customers",JSON.stringify(customers))
-localStorage.setItem("parts",JSON.stringify(parts))
+function saveAll(){
+localStorage.setItem("customers",JSON.stringify(customers));
+localStorage.setItem("technicians",JSON.stringify(technicians));
+localStorage.setItem("jobs",JSON.stringify(jobs));
+localStorage.setItem("techHoursOverride",JSON.stringify(techHoursOverride));
 }
 
-function load(){
-
-customers=JSON.parse(localStorage.getItem("customers"))||[]
-parts=JSON.parse(localStorage.getItem("parts"))||[]
-
-renderParts()
-}
-
-function showAddCustomer(){
-document.getElementById("addCustomerBox").style.display="block"
+function show(id){
+document.querySelectorAll(".main > div").forEach(d=>d.style.display="none");
+document.getElementById(id).style.display="block";
+renderAll();
 }
 
 function addCustomer(){
-
-customers.push({
-id:Date.now(),
-name:custName.value,
-phone:custPhone.value,
-jobs:[]
-})
-
-custName.value=""
-custPhone.value=""
-
-save()
-searchCustomer()
+let name=document.getElementById("customerName").value;
+if(!name)return;
+customers.push({name});
+saveAll();
+renderCustomers();
 }
 
-function searchCustomer(){
+function renderCustomers(){
+let list=document.getElementById("customerList");
+list.innerHTML="";
 
-let text=searchBox.value.toLowerCase()
+customers.forEach(c=>{
+let div=document.createElement("div");
+div.className="card";
+div.innerText=c.name;
+list.appendChild(div);
+});
 
-customerResults.innerHTML=""
-
-customers
-.filter(c=>c.name.toLowerCase().includes(text))
-.forEach(c=>{
-
-let div=document.createElement("div")
-
-div.className="list-item"
-div.innerText=c.name
-
-div.onclick=()=>openCustomer(c)
-
-customerResults.appendChild(div)
-
-})
+let select=document.getElementById("jobCustomer");
+select.innerHTML="";
+customers.forEach((c,i)=>{
+select.innerHTML+=`<option value="${i}">${c.name}</option>`;
+});
 }
 
-function openCustomer(c){
+function addTech(){
 
-selectedCustomer=c
+let name=document.getElementById("techName").value;
+let hours=parseFloat(document.getElementById("techHours").value);
 
-customerProfile.style.display="block"
+if(!name||!hours)return;
 
-profileName.innerText=c.name
-profilePhone.innerText=c.phone
+technicians.push({
+name,
+defaultHours:hours
+});
 
-renderJobs()
+saveAll();
+renderTechs();
 }
 
-function showAddJob(){
-addJobBox.style.display="block"
+function removeTech(i){
+technicians.splice(i,1);
+saveAll();
+renderTechs();
 }
 
-function addJob(){
+function renderTechs(){
 
-selectedCustomer.jobs.push({
+let list=document.getElementById("techList");
+list.innerHTML="";
 
-id:Date.now(),
-vehicle:jobVehicle.value,
-rego:jobRego.value,
-desc:jobDesc.value,
-status:"Not Started",
-time:0,
-parts:[]
-})
+technicians.forEach((t,i)=>{
 
-jobVehicle.value=""
-jobRego.value=""
-jobDesc.value=""
+let div=document.createElement("div");
+div.className="card";
 
-save()
-renderJobs()
+div.innerHTML=`
+${t.name} (${t.defaultHours}h)
+<button onclick="removeTech(${i})">Remove</button>
+`;
+
+list.appendChild(div);
+
+});
+
+let select=document.getElementById("jobTech");
+select.innerHTML="";
+technicians.forEach((t,i)=>{
+select.innerHTML+=`<option value="${i}">${t.name}</option>`;
+});
+}
+
+function createJob(){
+
+let customer=document.getElementById("jobCustomer").value;
+let tech=document.getElementById("jobTech").value;
+let hours=parseFloat(document.getElementById("jobHours").value);
+let date=document.getElementById("jobDate").value;
+
+if(!date||!hours)return;
+
+let available=getTechAvailableHours(tech,date);
+
+if(hours>available){
+alert("Technician does not have enough hours available");
+return;
+}
+
+jobs.push({
+customer,
+tech,
+hours,
+date
+});
+
+saveAll();
+renderJobs();
+renderCalendar();
 }
 
 function renderJobs(){
 
-jobList.innerHTML=""
+let list=document.getElementById("jobList");
+list.innerHTML="";
 
-selectedCustomer.jobs.forEach(j=>{
+jobs.forEach(j=>{
 
-let div=document.createElement("div")
+let div=document.createElement("div");
+div.className="card";
 
-div.className="list-item"
+div.innerText=
+customers[j.customer].name+
+" - "+
+technicians[j.tech].name+
+" - "+
+j.hours+"h - "+
+j.date;
 
-div.innerText=j.vehicle+" - "+j.rego
+list.appendChild(div);
 
-div.onclick=()=>openJob(j)
+});
 
-jobList.appendChild(div)
-
-})
 }
 
-function openJob(job){
+function getTechAvailableHours(tech,date){
 
-selectedJob=job
+let key=tech+"_"+date;
 
-jobCard.style.display="block"
+let total=techHoursOverride[key]||technicians[tech].defaultHours;
 
-jobTitle.innerText=job.vehicle+" "+job.rego
+let used=jobs
+.filter(j=>j.tech==tech && j.date==date)
+.reduce((sum,j)=>sum+j.hours,0);
 
-jobStatus.innerText=job.status
-
-jobTime.innerText=job.time
-
-renderJobParts()
-renderPartsDropdown()
+return total-used;
 }
 
-function clockOn(){
+function renderCalendar(){
 
-selectedJob.status="In Progress"
+let cal=document.getElementById("calendar");
+cal.innerHTML="";
 
-clockTimer=setInterval(()=>{
+let now=new Date();
+let year=now.getFullYear();
+let month=now.getMonth();
 
-selectedJob.time++
+let days=new Date(year,month+1,0).getDate();
 
-jobTime.innerText=selectedJob.time
+for(let d=1;d<=days;d++){
 
-save()
+let date=year+"-"+String(month+1).padStart(2,'0')+"-"+String(d).padStart(2,'0');
 
-},60000)
+let div=document.createElement("div");
+div.className="day";
 
-jobStatus.innerText="In Progress"
+div.innerHTML="<b>"+d+"</b>";
+
+technicians.forEach((t,i)=>{
+
+let avail=getTechAvailableHours(i,date);
+
+let techDiv=document.createElement("div");
+techDiv.className="techCard";
+
+techDiv.innerText=
+t.name+": "+avail+"h left";
+
+div.appendChild(techDiv);
+
+});
+
+div.onclick=()=>editDay(date);
+
+cal.appendChild(div);
+
 }
 
-function clockOff(){
-
-selectedJob.status="Stopped"
-
-clearInterval(clockTimer)
-
-jobStatus.innerText="Stopped"
-
-save()
 }
 
-function addPart(){
+function editDay(date){
 
-parts.push({
+let tech=prompt("Enter technician number (0-"+(technicians.length-1)+")");
 
-id:Date.now(),
-name:partName.value,
-price:partPrice.value
+if(tech===null)return;
 
-})
+let hours=prompt("Enter available hours");
 
-partName.value=""
-partPrice.value=""
+if(hours===null)return;
 
-save()
-renderParts()
+techHoursOverride[tech+"_"+date]=parseFloat(hours);
+
+saveAll();
+renderCalendar();
 }
 
-function renderParts(){
-
-partsList.innerHTML=""
-
-parts.forEach(p=>{
-
-let div=document.createElement("div")
-
-div.innerText=p.name+" $"+p.price
-
-partsList.appendChild(div)
-
-})
+function renderAll(){
+renderCustomers();
+renderTechs();
+renderJobs();
+renderCalendar();
 }
 
-function renderPartsDropdown(){
-
-partsDropdown.innerHTML=""
-
-parts.forEach(p=>{
-
-let opt=document.createElement("option")
-
-opt.value=p.id
-opt.innerText=p.name
-
-partsDropdown.appendChild(opt)
-
-})
-}
-
-function addPartToJob(){
-
-let id=partsDropdown.value
-
-let part=parts.find(p=>p.id==id)
-
-selectedJob.parts.push(part)
-
-save()
-
-renderJobParts()
-}
-
-function renderJobParts(){
-
-jobParts.innerHTML=""
-
-selectedJob.parts.forEach(p=>{
-
-let div=document.createElement("div")
-
-div.innerText=p.name+" $"+p.price
-
-jobParts.appendChild(div)
-
-})
-}
-
-load()
+renderAll();
 
 </script>
 
