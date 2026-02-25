@@ -1,73 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Schumacher Automotive DMS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schumacher Automotive Workshop</title>
 
 <style>
+
 body{
 font-family:Arial;
 margin:0;
-background:#f0f2f5;
+background:#f4f6f8;
+}
+
+.header{
+background:#2c3e50;
+color:white;
+padding:20px;
+font-size:22px;
 }
 
 .container{
-display:flex;
-}
-
-.sidebar{
-width:220px;
-background:#1f2a38;
-color:white;
-height:100vh;
 padding:20px;
 }
 
-.sidebar button{
+.card{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:8px;
+}
+
+input, button{
 width:100%;
 padding:12px;
-margin-bottom:10px;
-background:none;
-border:none;
-color:white;
-text-align:left;
-cursor:pointer;
+margin-top:10px;
+border-radius:6px;
+border:1px solid #ccc;
 font-size:16px;
 }
 
-.sidebar button:hover{
-background:#2e3d52;
+button{
+background:#2c3e50;
+color:white;
+border:none;
 }
 
-.main{
-flex:1;
-padding:20px;
+button:hover{
+background:#34495e;
 }
 
-.page{
-display:none;
-}
-
-.active{
-display:block;
-}
-
-.calendar{
-display:grid;
-grid-template-columns: repeat(7,1fr);
-gap:6px;
-}
-
-.day{
-background:white;
-padding:10px;
-border-radius:6px;
+.customer{
+padding:15px;
+background:#e9ecef;
+margin-top:8px;
+border-radius:8px;
 cursor:pointer;
-box-shadow:0 2px 4px rgba(0,0,0,0.1);
 }
 
-.day:hover{
-background:#e3ecff;
+.job{
+padding:10px;
+background:#f1f1f1;
+margin-top:5px;
+border-radius:6px;
+}
+
+.backBtn{
+background:#777;
+margin-top:15px;
 }
 
 </style>
@@ -75,106 +74,113 @@ background:#e3ecff;
 
 <body>
 
+<div class="header">
+Schumacher Automotive Workshop
+</div>
+
 <div class="container">
 
-<div class="sidebar">
+<div class="card">
 
-<h2>Schumacher Automotive</h2>
+<h3>Add Customer</h3>
 
-<button onclick="showPage('dashboard')">Calendar</button>
-<button onclick="showPage('technicians')">Technicians</button>
+<input id="customerName" placeholder="Customer Name">
+<input id="customerPhone" placeholder="Phone">
 
-</div>
-
-<div class="main">
-
-<div id="dashboard" class="page active">
-
-<h2>Workshop Calendar</h2>
-
-<button onclick="prevMonth()">◀</button>
-<span id="monthLabel"></span>
-<button onclick="nextMonth()">▶</button>
-
-<div id="calendar" class="calendar"></div>
+<button onclick="addCustomer()">Add Customer</button>
 
 </div>
 
-<div id="technicians" class="page">
 
-<h2>Technicians</h2>
+<div class="card">
 
-<input id="techName" placeholder="Technician Name">
-<button onclick="addTech()">Add Technician</button>
+<h3>Customers</h3>
 
-<div id="techList"></div>
+<div id="customerList"></div>
+
+<div id="customerProfile" style="display:none;">
+
+<h3 id="profileName"></h3>
+
+<input id="jobInput" placeholder="Job Description">
+
+<button onclick="addJob()">Add Job</button>
+
+<h4>Job History</h4>
+
+<div id="jobHistory"></div>
+
+<button class="backBtn" onclick="closeProfile()">
+Back to Customers
+</button>
 
 </div>
 
 </div>
 
 </div>
+
 
 <script>
 
-let currentDate = new Date();
+let customers =
+JSON.parse(localStorage.getItem("customers")) || [];
 
-let technicians =
-JSON.parse(localStorage.getItem("technicians")) || [];
+let activeCustomer = null;
 
-let calendarData =
-JSON.parse(localStorage.getItem("calendarData")) || {};
 
-function saveAll(){
+function save(){
 
-localStorage.setItem("technicians",
-JSON.stringify(technicians));
-
-localStorage.setItem("calendarData",
-JSON.stringify(calendarData));
+localStorage.setItem("customers",
+JSON.stringify(customers));
 
 }
 
-function showPage(page){
 
-document.querySelectorAll(".page")
-.forEach(p=>p.classList.remove("active"));
-
-document.getElementById(page)
-.classList.add("active");
-
-}
-
-function addTech(){
+function addCustomer(){
 
 let name =
-document.getElementById("techName").value;
+document.getElementById("customerName").value;
+
+let phone =
+document.getElementById("customerPhone").value;
 
 if(!name) return;
 
-technicians.push({name});
+customers.push({
 
-document.getElementById("techName").value="";
+name:name,
+phone:phone,
+jobs:[]
 
-saveAll();
+});
 
-renderTechs();
+save();
+
+document.getElementById("customerName").value="";
+document.getElementById("customerPhone").value="";
+
+renderCustomers();
 
 }
 
-function renderTechs(){
+
+function renderCustomers(){
 
 let list =
-document.getElementById("techList");
+document.getElementById("customerList");
 
 list.innerHTML="";
 
-technicians.forEach((t,i)=>{
+customers.forEach((customer,index)=>{
 
-list.innerHTML+=`
-<div>
-${t.name}
-<button onclick="removeTech(${i})">Remove</button>
+list.innerHTML +=
+`
+<div class="customer"
+onclick="openCustomer(${index})">
+
+${customer.name} - ${customer.phone}
+
 </div>
 `;
 
@@ -182,134 +188,79 @@ ${t.name}
 
 }
 
-function removeTech(i){
 
-technicians.splice(i,1);
+function openCustomer(index){
 
-saveAll();
+activeCustomer=index;
 
-renderTechs();
+document.getElementById("customerList").style.display="none";
 
-}
+document.getElementById("customerProfile").style.display="block";
 
-function renderCalendar(){
+document.getElementById("profileName").innerText =
+customers[index].name;
 
-let cal =
-document.getElementById("calendar");
-
-cal.innerHTML="";
-
-let year =
-currentDate.getFullYear();
-
-let month =
-currentDate.getMonth();
-
-document.getElementById("monthLabel")
-.innerHTML =
-currentDate.toLocaleString('default',
-{month:'long'})+" "+year;
-
-let days =
-new Date(year,month+1,0).getDate();
-
-for(let d=1; d<=days; d++){
-
-let key =
-year+"-"+month+"-"+d;
-
-if(!calendarData[key]){
-
-calendarData[key]={
-hours:8,
-jobs:[]
-};
+renderJobs();
 
 }
 
-let used =
-calendarData[key].jobs
-.reduce((t,j)=>t+j.hours,0);
 
-let div =
-document.createElement("div");
+function closeProfile(){
 
-div.className="day";
+document.getElementById("customerProfile").style.display="none";
 
-div.innerHTML=`
-<b>${d}</b><br>
-${used} / ${calendarData[key].hours} hrs
-`;
-
-div.onclick=()=>{
-openDay(key);
-};
-
-cal.appendChild(div);
+document.getElementById("customerList").style.display="block";
 
 }
 
-saveAll();
 
-}
+function addJob(){
 
-function openDay(key){
+let text =
+document.getElementById("jobInput").value;
 
-let day = calendarData[key];
+if(!text) return;
 
-let newHours =
-prompt("Available hours:",day.hours);
+customers[activeCustomer].jobs.push({
 
-if(newHours!=null)
-day.hours=Number(newHours);
+description:text,
+date:new Date().toLocaleDateString()
 
-let job =
-prompt("Job description:");
-
-if(!job) return;
-
-let hours =
-Number(prompt("Job hours:"));
-
-let techNames =
-technicians.map(t=>t.name).join(",");
-
-let tech =
-prompt("Assign technician:"+techNames);
-
-day.jobs.push({
-name:job,
-hours:hours,
-tech:tech
 });
 
-saveAll();
+save();
 
-renderCalendar();
+document.getElementById("jobInput").value="";
 
-}
-
-function prevMonth(){
-
-currentDate.setMonth(
-currentDate.getMonth()-1);
-
-renderCalendar();
+renderJobs();
 
 }
 
-function nextMonth(){
 
-currentDate.setMonth(
-currentDate.getMonth()+1);
+function renderJobs(){
 
-renderCalendar();
+let history =
+document.getElementById("jobHistory");
+
+history.innerHTML="";
+
+customers[activeCustomer].jobs.forEach(job=>{
+
+history.innerHTML +=
+`
+<div class="job">
+
+${job.date} — ${job.description}
+
+</div>
+`;
+
+});
 
 }
 
-renderCalendar();
 
-renderTechs();
+renderCustomers();
 
 </script>
 
