@@ -2,135 +2,94 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Schumacher Automotive DMS</title>
+<title>Schumacher Automotive Workshop</title>
 
 <style>
-body{
-font-family:Arial;
-margin:0;
-background:#f4f6f8;
+body {
+font-family: Arial;
+margin: 0;
+background: #f4f6f8;
 }
 
-.sidebar{
-width:220px;
-background:#1f2937;
-color:white;
-height:100vh;
-position:fixed;
-padding-top:20px;
+.header {
+background: #1f3a5f;
+color: white;
+padding: 15px;
+font-size: 22px;
 }
 
-.sidebar h2{
-text-align:center;
+.container {
+padding: 15px;
 }
 
-.sidebar button{
-width:100%;
-padding:15px;
-border:none;
-background:none;
-color:white;
-text-align:left;
-font-size:16px;
+.card {
+background: white;
+padding: 15px;
+margin-bottom: 15px;
+border-radius: 8px;
+box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.sidebar button:hover{
-background:#374151;
+button {
+background: #1f3a5f;
+color: white;
+border: none;
+padding: 10px;
+width: 100%;
+margin-top: 5px;
+border-radius: 5px;
 }
 
-.main{
-margin-left:220px;
-padding:20px;
+input {
+width: 100%;
+padding: 10px;
+margin-top: 5px;
 }
 
-.card{
-background:white;
-padding:15px;
-margin:10px 0;
-border-radius:8px;
-}
-
-input, select, button{
-padding:8px;
-margin:5px;
-}
-
-.calendar{
-display:grid;
-grid-template-columns:repeat(7,1fr);
-gap:5px;
-}
-
-.day{
-background:white;
-padding:10px;
-border-radius:6px;
-min-height:80px;
-cursor:pointer;
-}
-
-.techCard{
-background:#e5e7eb;
-padding:5px;
-margin:3px;
-border-radius:4px;
-font-size:12px;
+.customer {
+padding: 10px;
+background: #e9eef5;
+margin-top: 5px;
+border-radius: 5px;
+cursor: pointer;
 }
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="sidebar">
-<h2>Schumacher Automotive</h2>
-
-<button onclick="show('dashboard')">Dashboard</button>
-<button onclick="show('customers')">Customers</button>
-<button onclick="show('jobs')">Jobs</button>
-<button onclick="show('technicians')">Technicians</button>
-
+<div class="header">
+Schumacher Automotive Workshop
 </div>
 
-<div class="main">
+<div class="container">
 
-<div id="dashboard">
-<h2>Workshop Calendar</h2>
-<div id="calendar" class="calendar"></div>
-</div>
-
-<div id="customers" style="display:none">
-<h2>Customers</h2>
+<div class="card">
+<h3>Add Customer</h3>
 
 <input id="customerName" placeholder="Customer Name">
-<button onclick="addCustomer()">Add</button>
+<input id="customerPhone" placeholder="Phone">
 
+<button onclick="addCustomer()">Add Customer</button>
+
+<h3>Customers</h3>
 <div id="customerList"></div>
+
 </div>
 
-<div id="jobs" style="display:none">
-<h2>Create Job</h2>
+<div id="customerProfile" class="card" style="display:none;">
+<h3 id="profileName"></h3>
 
-<select id="jobCustomer"></select>
-<select id="jobTech"></select>
+<h4>Add Vehicle</h4>
 
-<input id="jobHours" type="number" placeholder="Hours">
+<input id="rego" placeholder="Rego">
+<input id="make" placeholder="Make">
+<input id="model" placeholder="Model">
 
-<input id="jobDate" type="date">
+<button onclick="addVehicle()">Add Vehicle</button>
 
-<button onclick="createJob()">Create Job</button>
-
-<div id="jobList"></div>
-</div>
-
-<div id="technicians" style="display:none">
-
-<h2>Technicians</h2>
-
-<input id="techName" placeholder="Technician Name">
-<input id="techHours" type="number" placeholder="Default Hours">
-<button onclick="addTech()">Add Technician</button>
-
-<div id="techList"></div>
+<h4>Vehicles</h4>
+<div id="vehicleList"></div>
 
 </div>
 
@@ -138,143 +97,45 @@ font-size:12px;
 
 <script>
 
-let customers=JSON.parse(localStorage.getItem("customers")||"[]");
-let technicians=JSON.parse(localStorage.getItem("technicians")||"[]");
-let jobs=JSON.parse(localStorage.getItem("jobs")||"[]");
-let techHoursOverride=JSON.parse(localStorage.getItem("techHoursOverride")||"{}");
+let customers = JSON.parse(localStorage.getItem("customers")) || [];
+let selectedCustomer = null;
 
-function saveAll(){
-localStorage.setItem("customers",JSON.stringify(customers));
-localStorage.setItem("technicians",JSON.stringify(technicians));
-localStorage.setItem("jobs",JSON.stringify(jobs));
-localStorage.setItem("techHoursOverride",JSON.stringify(techHoursOverride));
-}
-
-function show(id){
-document.querySelectorAll(".main > div").forEach(d=>d.style.display="none");
-document.getElementById(id).style.display="block";
-renderAll();
+function save(){
+localStorage.setItem("customers", JSON.stringify(customers));
 }
 
 function addCustomer(){
-let name=document.getElementById("customerName").value;
-if(!name)return;
-customers.push({name});
-saveAll();
+
+let name = document.getElementById("customerName").value;
+let phone = document.getElementById("customerPhone").value;
+
+if(!name) return;
+
+customers.push({
+name,
+phone,
+vehicles:[]
+});
+
+save();
 renderCustomers();
+
 }
 
 function renderCustomers(){
-let list=document.getElementById("customerList");
-list.innerHTML="";
 
-customers.forEach(c=>{
-let div=document.createElement("div");
-div.className="card";
-div.innerText=c.name;
-list.appendChild(div);
-});
+let list = document.getElementById("customerList");
+list.innerHTML = "";
 
-let select=document.getElementById("jobCustomer");
-select.innerHTML="";
-customers.forEach((c,i)=>{
-select.innerHTML+=`<option value="${i}">${c.name}</option>`;
-});
-}
+customers.forEach((c,index)=>{
 
-function addTech(){
+let div = document.createElement("div");
 
-let name=document.getElementById("techName").value;
-let hours=parseFloat(document.getElementById("techHours").value);
+div.className="customer";
 
-if(!name||!hours)return;
+div.innerHTML = c.name + " - " + c.phone;
 
-technicians.push({
-name,
-defaultHours:hours
-});
-
-saveAll();
-renderTechs();
-}
-
-function removeTech(i){
-technicians.splice(i,1);
-saveAll();
-renderTechs();
-}
-
-function renderTechs(){
-
-let list=document.getElementById("techList");
-list.innerHTML="";
-
-technicians.forEach((t,i)=>{
-
-let div=document.createElement("div");
-div.className="card";
-
-div.innerHTML=`
-${t.name} (${t.defaultHours}h)
-<button onclick="removeTech(${i})">Remove</button>
-`;
-
-list.appendChild(div);
-
-});
-
-let select=document.getElementById("jobTech");
-select.innerHTML="";
-technicians.forEach((t,i)=>{
-select.innerHTML+=`<option value="${i}">${t.name}</option>`;
-});
-}
-
-function createJob(){
-
-let customer=document.getElementById("jobCustomer").value;
-let tech=document.getElementById("jobTech").value;
-let hours=parseFloat(document.getElementById("jobHours").value);
-let date=document.getElementById("jobDate").value;
-
-if(!date||!hours)return;
-
-let available=getTechAvailableHours(tech,date);
-
-if(hours>available){
-alert("Technician does not have enough hours available");
-return;
-}
-
-jobs.push({
-customer,
-tech,
-hours,
-date
-});
-
-saveAll();
-renderJobs();
-renderCalendar();
-}
-
-function renderJobs(){
-
-let list=document.getElementById("jobList");
-list.innerHTML="";
-
-jobs.forEach(j=>{
-
-let div=document.createElement("div");
-div.className="card";
-
-div.innerText=
-customers[j.customer].name+
-" - "+
-technicians[j.tech].name+
-" - "+
-j.hours+"h - "+
-j.date;
+div.onclick = ()=>openCustomer(index);
 
 list.appendChild(div);
 
@@ -282,85 +143,61 @@ list.appendChild(div);
 
 }
 
-function getTechAvailableHours(tech,date){
+function openCustomer(index){
 
-let key=tech+"_"+date;
+selectedCustomer = index;
 
-let total=techHoursOverride[key]||technicians[tech].defaultHours;
+let c = customers[index];
 
-let used=jobs
-.filter(j=>j.tech==tech && j.date==date)
-.reduce((sum,j)=>sum+j.hours,0);
+document.getElementById("customerProfile").style.display="block";
 
-return total-used;
+document.getElementById("profileName").innerHTML = c.name;
+
+renderVehicles();
+
 }
 
-function renderCalendar(){
+function addVehicle(){
 
-let cal=document.getElementById("calendar");
-cal.innerHTML="";
+let rego = document.getElementById("rego").value;
+let make = document.getElementById("make").value;
+let model = document.getElementById("model").value;
 
-let now=new Date();
-let year=now.getFullYear();
-let month=now.getMonth();
+customers[selectedCustomer].vehicles.push({
+rego,
+make,
+model
+});
 
-let days=new Date(year,month+1,0).getDate();
+save();
+renderVehicles();
 
-for(let d=1;d<=days;d++){
+}
 
-let date=year+"-"+String(month+1).padStart(2,'0')+"-"+String(d).padStart(2,'0');
+function renderVehicles(){
 
-let div=document.createElement("div");
-div.className="day";
+let list = document.getElementById("vehicleList");
 
-div.innerHTML="<b>"+d+"</b>";
+list.innerHTML="";
 
-technicians.forEach((t,i)=>{
+customers[selectedCustomer].vehicles.forEach(v=>{
 
-let avail=getTechAvailableHours(i,date);
+let div = document.createElement("div");
 
-let techDiv=document.createElement("div");
-techDiv.className="techCard";
+div.className="customer";
 
-techDiv.innerText=
-t.name+": "+avail+"h left";
+div.innerHTML =
+v.rego + " - " +
+v.make + " " +
+v.model;
 
-div.appendChild(techDiv);
+list.appendChild(div);
 
 });
 
-div.onclick=()=>editDay(date);
-
-cal.appendChild(div);
-
 }
 
-}
-
-function editDay(date){
-
-let tech=prompt("Enter technician number (0-"+(technicians.length-1)+")");
-
-if(tech===null)return;
-
-let hours=prompt("Enter available hours");
-
-if(hours===null)return;
-
-techHoursOverride[tech+"_"+date]=parseFloat(hours);
-
-saveAll();
-renderCalendar();
-}
-
-function renderAll(){
 renderCustomers();
-renderTechs();
-renderJobs();
-renderCalendar();
-}
-
-renderAll();
 
 </script>
 
