@@ -5,7 +5,6 @@
 <title>Schumacher Automotive DMS</title>
 
 <style>
-
 body{
 margin:0;
 font-family:Arial;
@@ -21,6 +20,10 @@ color:white;
 padding:20px;
 }
 
+.sidebar h2{
+margin-bottom:20px;
+}
+
 .sidebar button{
 width:100%;
 padding:12px;
@@ -29,6 +32,7 @@ background:none;
 border:none;
 color:white;
 text-align:left;
+cursor:pointer;
 }
 
 .sidebar button:hover{
@@ -50,7 +54,7 @@ cursor:pointer;
 
 input, select{
 width:100%;
-padding:8px;
+padding:10px;
 margin:5px 0;
 }
 
@@ -61,61 +65,64 @@ border:none;
 padding:10px;
 margin-top:5px;
 width:100%;
+cursor:pointer;
 }
 
+button.action:hover{
+background:#1d4ed8;
+}
 </style>
 
 </head>
 <body>
 
 <div class="sidebar">
-
 <h2>Schumacher Automotive</h2>
-
-<button onclick="nav('dashboard')">Dashboard</button>
-<button onclick="nav('customers')">Customers</button>
-<button onclick="nav('parts')">Parts Database</button>
-<button onclick="nav('jobs')">All Jobs</button>
-
+<button onclick="navigate('dashboard')">Dashboard</button>
+<button onclick="navigate('customers')">Customers</button>
+<button onclick="navigate('parts')">Parts Database</button>
+<button onclick="navigate('jobs')">All Jobs</button>
 </div>
 
 <div class="main" id="main"></div>
 
 <script>
 
+let screen = "dashboard";
+let currentCustomer = null;
+let currentJob = null;
+let clockStart = null;
+
 let db = JSON.parse(localStorage.getItem("dealerDB")) || {
 customers:[],
-vehicles:[],
 jobs:[],
 parts:[]
 };
-
-let currentCustomer=null;
-let currentJob=null;
 
 function save(){
 localStorage.setItem("dealerDB",JSON.stringify(db));
 render();
 }
 
-function nav(screen){
-window.screen=screen;
+function navigate(s){
+screen = s;
 render();
 }
 
 function render(){
 
-if(screen=="customers") renderCustomers();
-else if(screen=="customerProfile") renderCustomerProfile();
-else if(screen=="parts") renderParts();
-else if(screen=="jobs") renderJobs();
-else renderDashboard();
+if(screen==="dashboard") renderDashboard();
+if(screen==="customers") renderCustomers();
+if(screen==="customerProfile") renderCustomerProfile();
+if(screen==="parts") renderParts();
+if(screen==="jobs") renderJobs();
+if(screen==="jobEditor") renderJobEditor();
 
 }
 
 function renderDashboard(){
 
-main.innerHTML=`
+document.getElementById("main").innerHTML = `
 <h1>Dashboard</h1>
 
 <div class="card">Customers: ${db.customers.length}</div>
@@ -127,20 +134,20 @@ main.innerHTML=`
 
 function renderCustomers(){
 
-main.innerHTML=`
-
+document.getElementById("main").innerHTML = `
 <h1>Customers</h1>
 
-<input id="search" placeholder="Search customer" oninput="listCustomers()">
+<input id="searchBox" placeholder="Search customers">
 
-<input id="name" placeholder="Customer Name">
-<input id="phone" placeholder="Phone">
+<input id="custName" placeholder="Customer name">
+<input id="custPhone" placeholder="Phone">
 
 <button class="action" onclick="addCustomer()">Add Customer</button>
 
 <div id="customerList"></div>
-
 `;
+
+document.getElementById("searchBox").oninput = listCustomers;
 
 listCustomers();
 
@@ -148,29 +155,33 @@ listCustomers();
 
 function listCustomers(){
 
-let s=(search.value||"").toLowerCase();
+let s = document.getElementById("searchBox").value.toLowerCase();
 
-customerList.innerHTML=db.customers
-.filter(c=>c.name.toLowerCase().includes(s)||c.phone.includes(s))
-.map(c=>`
-
+document.getElementById("customerList").innerHTML = db.customers
+.filter(c =>
+c.name.toLowerCase().includes(s) ||
+c.phone.includes(s)
+)
+.map(c => `
 <div class="card" onclick="openCustomer(${c.id})">
-
 <b>${c.name}</b><br>
 ${c.phone}
-
 </div>
-
 `).join("");
 
 }
 
 function addCustomer(){
 
+let name = document.getElementById("custName").value;
+let phone = document.getElementById("custPhone").value;
+
+if(!name) return;
+
 db.customers.push({
-id:Date.now(),
-name:name.value,
-phone:phone.value
+id: Date.now(),
+name,
+phone
 });
 
 save();
@@ -179,20 +190,17 @@ save();
 
 function openCustomer(id){
 
-currentCustomer=db.customers.find(c=>c.id==id);
-
-screen="customerProfile";
-
+currentCustomer = db.customers.find(c=>c.id===id);
+screen = "customerProfile";
 render();
 
 }
 
 function renderCustomerProfile(){
 
-let jobs=db.jobs.filter(j=>j.customerId==currentCustomer.id);
+let jobs = db.jobs.filter(j=>j.customerId===currentCustomer.id);
 
-main.innerHTML=`
-
+document.getElementById("main").innerHTML = `
 <h1>${currentCustomer.name}</h1>
 
 <input id="editName" value="${currentCustomer.name}">
@@ -200,60 +208,63 @@ main.innerHTML=`
 
 <button class="action" onclick="saveCustomer()">Save Customer</button>
 
-<h2>Job History</h2>
+<h2>Jobs</h2>
 
-<button class="action" onclick="newJob()">New Job</button>
+<button class="action" onclick="createJob()">New Job</button>
 
 ${jobs.map(j=>`
-
-<div class="card">
-
+<div class="card" onclick="openJob(${j.id})">
 Job ${j.id}<br>
 Status: ${j.status}<br>
 Parts: ${j.parts.length}
-
 </div>
-
 `).join("")}
-
 `;
 
 }
 
 function saveCustomer(){
 
-currentCustomer.name=editName.value;
-currentCustomer.phone=editPhone.value;
+currentCustomer.name = document.getElementById("editName").value;
+currentCustomer.phone = document.getElementById("editPhone").value;
 
 save();
 
 }
 
-function newJob(){
+function createJob(){
 
-let job={
-id:Date.now(),
-customerId:currentCustomer.id,
-status:"Open",
-parts:[],
-labour:0
+let job = {
+id: Date.now(),
+customerId: currentCustomer.id,
+status: "Open",
+parts: [],
+labour: 0
 };
 
 db.jobs.push(job);
 
-currentJob=job;
+currentJob = job;
+screen = "jobEditor";
+render();
 
-renderJobEditor();
+}
+
+function openJob(id){
+
+currentJob = db.jobs.find(j=>j.id===id);
+screen = "jobEditor";
+render();
 
 }
 
 function renderJobEditor(){
 
-main.innerHTML=`
-
+document.getElementById("main").innerHTML = `
 <h1>Job ${currentJob.id}</h1>
 
-<h3>Status: ${currentJob.status}</h3>
+Status: ${currentJob.status}<br>
+Labour: ${currentJob.labour.toFixed(2)} hrs<br>
 
 <button class="action" onclick="clockOn()">Clock On</button>
 <button class="action" onclick="clockOff()">Clock Off</button>
@@ -261,120 +272,72 @@ main.innerHTML=`
 <h3>Add Part</h3>
 
 <select id="partSelect">
-
-${db.parts.map(p=>`<option value="${p.id}">${p.name}</option>`)}
-
+${db.parts.map(p=>`<option value="${p.id}">${p.name} ($${p.price})</option>`).join("")}
 </select>
 
 <button class="action" onclick="addPartToJob()">Add Part</button>
 
-<h3>Parts on Job</h3>
+<h3>Parts</h3>
 
 ${currentJob.parts.map(p=>`
-
-<div class="card">
-
-${p.name} - $${p.price}
-
-</div>
-
+<div class="card">${p.name} - $${p.price}</div>
 `).join("")}
 
 <button class="action" onclick="completeJob()">Complete Job</button>
 
+<button class="action" onclick="openCustomer(${currentJob.customerId})">Back to Customer</button>
 `;
 
 }
 
-let clockStart=null;
-
 function clockOn(){
-clockStart=Date.now();
+clockStart = Date.now();
 }
 
 function clockOff(){
 
 if(clockStart){
-
-let hours=(Date.now()-clockStart)/3600000;
-
-currentJob.labour+=hours;
-
+let hours = (Date.now()-clockStart)/3600000;
+currentJob.labour += hours;
+clockStart = null;
 save();
-
 }
 
 }
 
 function completeJob(){
-
-currentJob.status="Completed";
-
+currentJob.status = "Completed";
 save();
-
-}
-
-function renderJobs(){
-
-main.innerHTML=`
-
-<h1>All Jobs</h1>
-
-${db.jobs.map(j=>{
-
-let c=db.customers.find(c=>c.id==j.customerId);
-
-return `
-
-<div class="card">
-
-${c?.name}<br>
-Job ${j.id}<br>
-Status: ${j.status}
-
-</div>
-
-`;
-
-}).join("")}
-
-`;
-
 }
 
 function renderParts(){
 
-main.innerHTML=`
-
+document.getElementById("main").innerHTML = `
 <h1>Parts Database</h1>
 
-<input id="partName" placeholder="Part Name">
-<input id="partPrice" placeholder="Sell Price">
+<input id="partName" placeholder="Part name">
+<input id="partPrice" placeholder="Price">
 
 <button class="action" onclick="addPart()">Add Part</button>
 
 ${db.parts.map(p=>`
-
-<div class="card">
-
-${p.name} - $${p.price}
-
-</div>
-
+<div class="card">${p.name} - $${p.price}</div>
 `).join("")}
-
 `;
 
 }
 
 function addPart(){
 
+let name = document.getElementById("partName").value;
+let price = Number(document.getElementById("partPrice").value);
+
+if(!name) return;
+
 db.parts.push({
-
-id:Date.now(),
-name:partName.value,
-price:Number(partPrice.value)
-
+id: Date.now(),
+name,
+price
 });
 
 save();
@@ -383,19 +346,35 @@ save();
 
 function addPartToJob(){
 
-let id=Number(partSelect.value);
-
-let part=db.parts.find(p=>p.id==id);
+let id = Number(document.getElementById("partSelect").value);
+let part = db.parts.find(p=>p.id===id);
 
 currentJob.parts.push(part);
 
 save();
 
-renderJobEditor();
+}
+
+function renderJobs(){
+
+document.getElementById("main").innerHTML = `
+<h1>All Jobs</h1>
+
+${db.jobs.map(j=>{
+let cust = db.customers.find(c=>c.id===j.customerId);
+return `
+<div class="card" onclick="openJob(${j.id})">
+${cust?.name}<br>
+Job ${j.id}<br>
+Status: ${j.status}
+</div>
+`;
+}).join("")}
+`;
 
 }
 
-nav("dashboard");
+render();
 
 </script>
 
