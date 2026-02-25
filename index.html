@@ -1,43 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
 <title>Schumacher Automotive DMS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 
 body{
-font-family:Arial;
 margin:0;
-display:flex;
+font-family:Arial;
 background:#f4f6f8;
 }
 
 .sidebar{
+position:fixed;
+left:0;
+top:0;
+bottom:0;
 width:220px;
 background:#1f2937;
 color:white;
 padding:20px;
-height:100vh;
 }
 
 .sidebar h2{
-margin-top:0;
+margin-bottom:30px;
 }
 
 .sidebar button{
 width:100%;
 padding:12px;
-margin-top:10px;
+margin-bottom:10px;
+border:none;
 background:#374151;
 color:white;
-border:none;
+cursor:pointer;
 text-align:left;
 }
 
+.sidebar button:hover{
+background:#4b5563;
+}
+
 .main{
-flex:1;
+margin-left:220px;
 padding:20px;
+}
+
+.tab{
+display:none;
+}
+
+.active{
+display:block;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:8px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+input,select{
+padding:8px;
+margin:5px;
+}
+
+button.action{
+padding:8px 12px;
+background:#2563eb;
+color:white;
+border:none;
+cursor:pointer;
 }
 
 .calendar{
@@ -49,171 +86,417 @@ gap:10px;
 .day{
 background:white;
 padding:10px;
-border-radius:8px;
-min-height:80px;
+border-radius:6px;
 cursor:pointer;
-box-shadow:0 2px 4px rgba(0,0,0,0.1);
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
 .day:hover{
-background:#e5e7eb;
+background:#dbeafe;
 }
 
-.job{
+.small{
 font-size:12px;
-background:#2563eb;
-color:white;
-padding:2px;
-margin-top:2px;
+color:#555;
+}
+
+.jobItem{
+padding:5px;
+background:#e5e7eb;
+margin-top:5px;
 border-radius:4px;
+cursor:pointer;
+}
+
+.jobItem:hover{
+background:#c7d2fe;
 }
 
 </style>
+
 </head>
+
 <body>
 
 <div class="sidebar">
+
 <h2>Schumacher Automotive</h2>
 
-<button onclick="showCalendar()">Calendar</button>
+<button onclick="showTab('dashboard')">Dashboard</button>
+
+<button onclick="showTab('jobs')">Jobs</button>
+
+<button onclick="showTab('calendar')">Calendar</button>
+
+<button onclick="showTab('technicians')">Technicians</button>
+
+<button onclick="showTab('parts')">Parts</button>
 
 </div>
 
 <div class="main">
 
-<h2 id="monthTitle"></h2>
+<!-- DASHBOARD -->
+<div id="dashboard" class="tab active">
 
-<div class="calendar" id="calendar"></div>
+<h1>Dashboard</h1>
+
+<div class="card">
+
+Total Jobs: <span id="jobCount">0</span><br>
+
+Total Parts: <span id="partCount">0</span><br>
+
+Technicians: <span id="techCount">0</span>
 
 </div>
 
+</div>
+
+
+<!-- JOBS -->
+<div id="jobs" class="tab">
+
+<h1>Jobs</h1>
+
+<div class="card">
+
+<input id="jobCustomer" placeholder="Customer">
+
+<input id="jobVehicle" placeholder="Vehicle">
+
+<input id="jobHours" type="number" placeholder="Hours">
+
+<button class="action" onclick="addJob()">Add Job</button>
+
+</div>
+
+<div id="jobList"></div>
+
+</div>
+
+
+<!-- CALENDAR -->
+<div id="calendar" class="tab">
+
+<h1>Workshop Calendar</h1>
+
+<div class="calendar" id="calendarGrid"></div>
+
+</div>
+
+
+<!-- TECHNICIANS -->
+<div id="technicians" class="tab">
+
+<h1>Technicians</h1>
+
+<div class="card">
+
+<input id="techName" placeholder="Technician name">
+
+<input id="techHours" type="number" placeholder="Daily hours">
+
+<button class="action" onclick="addTech()">Add Technician</button>
+
+</div>
+
+<div id="techList"></div>
+
+</div>
+
+
+<!-- PARTS -->
+<div id="parts" class="tab">
+
+<h1>Parts Database</h1>
+
+<div class="card">
+
+<input id="partName" placeholder="Part name">
+
+<input id="partQty" type="number" placeholder="Qty">
+
+<button class="action" onclick="addPart()">Add Part</button>
+
+</div>
+
+<div id="partList"></div>
+
+</div>
+
+
+</div>
+
+
 <script>
 
-let currentDate = new Date();
+let jobs=JSON.parse(localStorage.getItem("jobs")||"[]")
 
-let calendarData = JSON.parse(localStorage.getItem("calendarData")) || {};
+let parts=JSON.parse(localStorage.getItem("parts")||"[]")
 
-let technicians = JSON.parse(localStorage.getItem("technicians")) || [
-{name:"Tech 1"},
-{name:"Tech 2"},
-{name:"Tech 3"}
-];
+let techs=JSON.parse(localStorage.getItem("techs")||"[]")
+
+let calendar=JSON.parse(localStorage.getItem("calendar")||"{}")
+
 
 function save(){
 
-localStorage.setItem("calendarData",JSON.stringify(calendarData));
+localStorage.setItem("jobs",JSON.stringify(jobs))
+
+localStorage.setItem("parts",JSON.stringify(parts))
+
+localStorage.setItem("techs",JSON.stringify(techs))
+
+localStorage.setItem("calendar",JSON.stringify(calendar))
+
+updateCounts()
 
 }
 
-function showCalendar(){
 
-renderCalendar();
+function showTab(tab){
+
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
+
+document.getElementById(tab).classList.add("active")
 
 }
+
+
+function updateCounts(){
+
+jobCount.innerText=jobs.length
+
+partCount.innerText=parts.length
+
+techCount.innerText=techs.length
+
+}
+
+
+function addJob(){
+
+let job={
+
+id:Date.now(),
+
+customer:jobCustomer.value,
+
+vehicle:jobVehicle.value,
+
+hours:Number(jobHours.value)
+
+}
+
+jobs.push(job)
+
+save()
+
+renderJobs()
+
+}
+
+
+function renderJobs(){
+
+jobList.innerHTML=""
+
+jobs.forEach(j=>{
+
+let div=document.createElement("div")
+
+div.className="card"
+
+div.innerHTML=`
+
+<b>${j.customer}</b><br>
+
+${j.vehicle}<br>
+
+${j.hours} hrs<br>
+
+<button onclick="assignToDay(${j.id})">Assign to Day</button>
+
+`
+
+jobList.appendChild(div)
+
+})
+
+}
+
+
+function assignToDay(jobId){
+
+let day=prompt("Enter day number")
+
+if(!calendar[day]){
+
+calendar[day]={hours:8,jobs:[]}
+
+}
+
+calendar[day].jobs.push(jobId)
+
+save()
+
+renderCalendar()
+
+}
+
 
 function renderCalendar(){
 
-let cal = document.getElementById("calendar");
+calendarGrid.innerHTML=""
 
-cal.innerHTML="";
+for(let i=1;i<=31;i++){
 
-let year = currentDate.getFullYear();
-let month = currentDate.getMonth();
+let d=calendar[i]||{hours:8,jobs:[]}
 
-document.getElementById("monthTitle").innerHTML =
-currentDate.toLocaleString('default',{month:'long'})+" "+year;
+let used=0
 
-let days = new Date(year,month+1,0).getDate();
+d.jobs.forEach(jid=>{
 
-for(let d=1; d<=days; d++){
+let job=jobs.find(j=>j.id==jid)
 
-let key = year+"-"+month+"-"+d;
+if(job)used+=job.hours
 
-if(!calendarData[key]){
+})
 
-calendarData[key]={
-hours:8,
-jobs:[]
-};
+let div=document.createElement("div")
 
-}
+div.className="day"
 
-let day = calendarData[key];
+div.innerHTML=`
 
-let used = 0;
+<b>${i}</b><br>
 
-day.jobs.forEach(j=> used+=j.hours);
+<span class="small">${used}/${d.hours} hrs</span>
 
-let div = document.createElement("div");
+`
 
-div.className="day";
+div.onclick=()=>editDay(i)
 
-let jobsHTML="";
-
-day.jobs.forEach((j,i)=>{
-
-jobsHTML += `<div class="job">${j.name} (${j.hours}h) - ${j.tech}</div>`;
-
-});
-
-div.innerHTML=
-"<b>"+d+"</b><br>"+
-used+" / "+day.hours+" hrs"+
-jobsHTML;
-
-div.onclick=function(){
-
-openDay(key);
-
-};
-
-cal.appendChild(div);
+calendarGrid.appendChild(div)
 
 }
 
-save();
+}
+
+
+function editDay(day){
+
+let hrs=prompt("Available hours",calendar[day]?.hours||8)
+
+if(!calendar[day])calendar[day]={jobs:[]}
+
+calendar[day].hours=Number(hrs)
+
+save()
+
+renderCalendar()
 
 }
 
-function openDay(key){
 
-let day = calendarData[key];
+function addTech(){
 
-let hours = prompt("Available hours:",day.hours);
+let tech={
 
-if(hours!==null){
+id:Date.now(),
 
-day.hours = Number(hours);
+name:techName.value,
 
-}
-
-let jobName = prompt("Job name:");
-
-if(jobName){
-
-let jobHours = Number(prompt("Job hours:"));
-
-let techList = technicians.map(t=>t.name).join(", ");
-
-let tech = prompt("Assign technician: "+techList);
-
-day.jobs.push({
-
-name:jobName,
-hours:jobHours,
-tech:tech
-
-});
+hours:Number(techHours.value)
 
 }
 
-save();
+techs.push(tech)
 
-renderCalendar();
+save()
+
+renderTechs()
 
 }
 
-renderCalendar();
+
+function renderTechs(){
+
+techList.innerHTML=""
+
+techs.forEach(t=>{
+
+let div=document.createElement("div")
+
+div.className="card"
+
+div.innerHTML=`
+
+${t.name}<br>
+
+${t.hours} hrs/day
+
+`
+
+techList.appendChild(div)
+
+})
+
+}
+
+
+function addPart(){
+
+let part={
+
+name:partName.value,
+
+qty:Number(partQty.value)
+
+}
+
+parts.push(part)
+
+save()
+
+renderParts()
+
+}
+
+
+function renderParts(){
+
+partList.innerHTML=""
+
+parts.forEach(p=>{
+
+let div=document.createElement("div")
+
+div.className="card"
+
+div.innerHTML=`
+
+${p.name}<br>
+
+Qty: ${p.qty}
+
+`
+
+partList.appendChild(div)
+
+}
+
+
+renderJobs()
+
+renderParts()
+
+renderTechs()
+
+renderCalendar()
+
+updateCounts()
 
 </script>
 
