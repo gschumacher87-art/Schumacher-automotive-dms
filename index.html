@@ -7,69 +7,86 @@
 <style>
 
 body{
-font-family:Arial;
-background:#0b1220;
-color:white;
 margin:0;
+font-family:Arial;
+background:#f4f6f8;
+}
+
+.sidebar{
+position:fixed;
+width:220px;
+height:100%;
+background:#1f2937;
+color:white;
+padding-top:20px;
+}
+
+.sidebar h2{
+text-align:center;
+margin-bottom:30px;
+}
+
+.sidebar button{
+width:100%;
+padding:15px;
+border:none;
+background:none;
+color:white;
+text-align:left;
+font-size:16px;
+}
+
+.sidebar button:hover{
+background:#374151;
+}
+
+.main{
+margin-left:220px;
+padding:20px;
 }
 
 .header{
-background:#111827;
+background:white;
 padding:15px;
+border-radius:8px;
+margin-bottom:20px;
 font-size:22px;
 font-weight:bold;
-display:flex;
-justify-content:space-between;
 }
 
-.tabs{
-display:flex;
-background:#1f2937;
-}
-
-.tab{
-padding:12px;
-cursor:pointer;
-}
-
-.tab.active{
-background:#2563eb;
-}
-
-.search{
-padding:10px;
-background:#111827;
-}
-
-input{
-padding:8px;
-width:95%;
-}
-
-.job{
-background:#1f2937;
-margin:10px;
+.card{
+background:white;
 padding:15px;
+margin-bottom:15px;
 border-radius:8px;
 }
 
-button{
+input, textarea, select{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button.action{
 background:#2563eb;
 color:white;
 border:none;
-padding:8px;
-margin:4px;
+padding:10px;
+margin-top:10px;
 border-radius:6px;
 }
 
-.total{
-color:#22c55e;
-font-weight:bold;
+button.delete{
+background:#dc2626;
 }
 
-.small{
-color:#9ca3af;
-font-size:12px;
+.job{
+border:1px solid #ddd;
+padding:10px;
+margin-top:10px;
+border-radius:6px;
 }
 
 </style>
@@ -77,203 +94,221 @@ font-size:12px;
 </head>
 <body>
 
-<div class="header">
-Schumacher Automotive DMS
-<button onclick="newJob()">+ New Job</button>
+<div class="sidebar">
+
+<h2>DMS</h2>
+
+<button onclick="showPage('dashboard')">Dashboard</button>
+<button onclick="showPage('customers')">Customers</button>
+<button onclick="showPage('jobs')">Jobs</button>
+
 </div>
 
-<div class="tabs">
-<div class="tab active" onclick="showTab('open')">Open Jobs</div>
-<div class="tab" onclick="showTab('complete')">Completed</div>
-</div>
+<div class="main">
 
-<div class="search">
-<input id="searchBox" placeholder="Search customer, reg, vehicle..." onkeyup="render()">
-</div>
+<div class="header" id="title">Dashboard</div>
 
-<div id="jobs"></div>
+<div id="content"></div>
+
+</div>
 
 <script>
 
-let jobs = JSON.parse(localStorage.getItem("jobs") || "[]")
-
-let currentTab="open"
+let customers = JSON.parse(localStorage.getItem("customers") || "[]");
+let jobs = JSON.parse(localStorage.getItem("jobs") || "[]");
 
 function save(){
-localStorage.setItem("jobs",JSON.stringify(jobs))
-render()
+localStorage.setItem("customers",JSON.stringify(customers));
+localStorage.setItem("jobs",JSON.stringify(jobs));
 }
 
-function showTab(tab){
+function showPage(page){
 
-currentTab=tab
+document.getElementById("title").innerText = page.charAt(0).toUpperCase()+page.slice(1);
 
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
-
-event.target.classList.add("active")
-
-render()
-
-}
-
-function newJob(){
-
-let customer = prompt("Customer name")
-if(!customer) return
-
-let vehicle = prompt("Vehicle")
-let reg = prompt("Registration")
-
-jobs.push({
-id:Date.now(),
-customer,
-vehicle,
-reg,
-parts:[],
-labour:0,
-clockStart:null,
-status:"open"
-})
-
-save()
+if(page=="dashboard") dashboard();
+if(page=="customers") customersPage();
+if(page=="jobs") jobsPage();
 
 }
 
-function clockOn(id){
+function dashboard(){
 
-let job = jobs.find(j=>j.id==id)
+let html = `
+<div class="card">
+Total Customers: ${customers.length}
+</div>
 
-job.clockStart=Date.now()
+<div class="card">
+Total Jobs: ${jobs.length}
+</div>
+`;
 
-save()
-
-}
-
-function clockOff(id){
-
-let job=jobs.find(j=>j.id==id)
-
-if(job.clockStart){
-
-let hours=(Date.now()-job.clockStart)/3600000
-
-job.labour+=hours*120
-
-job.clockStart=null
+document.getElementById("content").innerHTML = html;
 
 }
 
-save()
+function customersPage(){
 
-}
+let html = `
+<div class="card">
 
-function addPart(id){
+<h3>Add Customer</h3>
 
-let name=prompt("Part name")
+<input id="cname" placeholder="Customer Name">
+<input id="cphone" placeholder="Phone">
+<input id="cvehicle" placeholder="Vehicle">
 
-let price=parseFloat(prompt("Price"))
+<button class="action" onclick="addCustomer()">Add Customer</button>
 
-if(!name || !price) return
+</div>
 
-let job=jobs.find(j=>j.id==id)
+<div class="card">
 
-job.parts.push({name,price})
+<h3>Customer List</h3>
 
-save()
+`;
 
-}
-
-function complete(id){
-
-let job=jobs.find(j=>j.id==id)
-
-job.status="complete"
-
-save()
-
-}
-
-function total(job){
-
-let parts=job.parts.reduce((a,b)=>a+b.price,0)
-
-return parts+job.labour
-
-}
-
-function printJob(id){
-
-let job=jobs.find(j=>j.id==id)
-
-let w=window.open()
-
-w.document.write("<h1>Schumacher Automotive</h1>")
-w.document.write("Customer:"+job.customer+"<br>")
-w.document.write("Vehicle:"+job.vehicle+"<br>")
-w.document.write("Reg:"+job.reg+"<br>")
-
-job.parts.forEach(p=>{
-w.document.write(p.name+" $"+p.price+"<br>")
-})
-
-w.document.write("Labour:$"+job.labour.toFixed(2)+"<br>")
-w.document.write("<h2>Total:$"+total(job).toFixed(2)+"</h2>")
-
-w.print()
-
-}
-
-function render(){
-
-let search=document.getElementById("searchBox").value.toLowerCase()
-
-let html=""
-
-jobs
-.filter(job=>job.status==currentTab)
-.filter(job=>
-job.customer.toLowerCase().includes(search) ||
-job.reg.toLowerCase().includes(search) ||
-job.vehicle.toLowerCase().includes(search)
-)
-.reverse()
-.forEach(job=>{
+customers.forEach((c,i)=>{
 
 html+=`
 <div class="job">
 
-<b>${job.customer}</b><br>
+<b>${c.name}</b><br>
+${c.phone}<br>
+${c.vehicle}
 
-${job.vehicle} - ${job.reg}
-
-<div class="small">
-${job.status}
-</div>
-
-<div class="total">
-$${total(job).toFixed(2)}
-</div>
-
-<button onclick="clockOn(${job.id})">Clock On</button>
-
-<button onclick="clockOff(${job.id})">Clock Off</button>
-
-<button onclick="addPart(${job.id})">Add Part</button>
-
-<button onclick="complete(${job.id})">Complete</button>
-
-<button onclick="printJob(${job.id})">Print</button>
+<button class="action" onclick="deleteCustomer(${i})">Delete</button>
 
 </div>
-`
+`;
 
-})
+});
 
-document.getElementById("jobs").innerHTML=html
+html+=`</div>`;
+
+document.getElementById("content").innerHTML = html;
 
 }
 
-render()
+function addCustomer(){
+
+let name=document.getElementById("cname").value;
+let phone=document.getElementById("cphone").value;
+let vehicle=document.getElementById("cvehicle").value;
+
+customers.push({
+name,phone,vehicle
+});
+
+save();
+customersPage();
+
+}
+
+function deleteCustomer(i){
+
+customers.splice(i,1);
+
+save();
+customersPage();
+
+}
+
+function jobsPage(){
+
+let html = `
+<div class="card">
+
+<h3>Create Job</h3>
+
+<select id="jobCustomer">
+${customers.map((c,i)=>`<option value="${i}">${c.name}</option>`).join("")}
+</select>
+
+<input id="jobDesc" placeholder="Job Description">
+
+<select id="jobStatus">
+<option>Pending</option>
+<option>In Progress</option>
+<option>Completed</option>
+</select>
+
+<button class="action" onclick="addJob()">Create Job</button>
+
+</div>
+
+<div class="card">
+
+<h3>Job List</h3>
+
+`;
+
+jobs.forEach((j,i)=>{
+
+html+=`
+<div class="job">
+
+<b>${customers[j.customer]?.name || "Unknown"}</b><br>
+
+${j.desc}<br>
+
+Status: ${j.status}
+
+<br>
+
+<select onchange="updateStatus(${i},this.value)">
+<option ${j.status=="Pending"?"selected":""}>Pending</option>
+<option ${j.status=="In Progress"?"selected":""}>In Progress</option>
+<option ${j.status=="Completed"?"selected":""}>Completed</option>
+</select>
+
+<button class="delete" onclick="deleteJob(${i})">Delete</button>
+
+</div>
+`;
+
+});
+
+html+=`</div>`;
+
+document.getElementById("content").innerHTML = html;
+
+}
+
+function addJob(){
+
+let customer=document.getElementById("jobCustomer").value;
+let desc=document.getElementById("jobDesc").value;
+let status=document.getElementById("jobStatus").value;
+
+jobs.push({
+customer,desc,status
+});
+
+save();
+jobsPage();
+
+}
+
+function updateStatus(i,status){
+
+jobs[i].status=status;
+
+save();
+
+}
+
+function deleteJob(i){
+
+jobs.splice(i,1);
+
+save();
+jobsPage();
+
+}
+
+dashboard();
 
 </script>
 
