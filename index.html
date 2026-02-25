@@ -189,23 +189,22 @@ body {
 
         <div class="dashboard-grid">
 
-            <div class="card" onclick="openTab('jobsTab')">
-                <div class="card-title">Jobs Today</div>
-                <div class="card-value">0</div>
-            </div>
+    <div class="card" onclick="showPage('jobs')" style="cursor:pointer;">
+        <div class="card-title">Jobs Today</div>
+        <div class="card-value">0</div>
+    </div>
 
-            <div class="card" onclick="openTab('vehiclesTab')">
-                <div class="card-title">Vehicles in Workshop</div>
-                <div class="card-value">0</div>
-            </div>
+    <div class="card" onclick="showPage('calendar')" style="cursor:pointer;">
+        <div class="card-title">Vehicles in Workshop</div>
+        <div class="card-value">0</div>
+    </div>
 
-            <div class="card" onclick="openTab('hoursTab')">
-                <div class="card-title">Hours Booked Today</div>
-                <div class="card-value">0</div>
-            </div>
+    <div class="card" onclick="showPage('parts')" style="cursor:pointer;">
+        <div class="card-title">Hours Booked Today</div>
+        <div class="card-value">0</div>
+    </div>
 
-        </div>
-
+</div>
         <!-- TAB CONTENT -->
 
         <div id="jobsTab" class="dashboard-tab">
