@@ -186,7 +186,23 @@ body {
     <div id="dashboardPage">
 
         <div class="page-title">Dashboard</div>
+<!-- DASHBOARD CALENDAR -->
 
+<div class="card">
+
+    <div class="calendar-header">
+
+        <button onclick="changeMonth(-1)">◀</button>
+
+        <h2 id="dashboardMonthLabel"></h2>
+
+        <button onclick="changeMonth(1)">▶</button>
+
+    </div>
+
+    <div id="dashboardCalendar" class="calendar-grid"></div>
+
+</div>
         <div class="dashboard-grid">
 
     <div class="card" onclick="showPage('jobs')" style="cursor:pointer;">
@@ -331,6 +347,8 @@ function renderCalendar() {
 
     const calendar = document.getElementById("calendar");
 
+    const dashboardCalendar = document.getElementById("dashboardCalendar");
+ 
     const monthLabel = document.getElementById("monthLabel");
 
     const year = currentDate.getFullYear();
@@ -341,7 +359,7 @@ function renderCalendar() {
     { month: "long", year: "numeric" });
 
     calendar.innerHTML = "";
-
+    dashboardCalendar.innerHTML = "";
     const daysInMonth =
     new Date(year, month+1, 0).getDate();
 
@@ -388,6 +406,7 @@ function renderCalendar() {
         };
 
         calendar.appendChild(box);
+        dashboardCalendar.appendChild(box.cloneNode(true));
 
     }
 
