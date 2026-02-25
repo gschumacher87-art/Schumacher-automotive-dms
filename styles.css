@@ -1,0 +1,55 @@
+
+:root {
+  --primary: #1976d2;
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #111;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --card: #1e1e1e;
+    --text: #fff;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.screen {
+  display: none;
+  padding: 20px;
+}
+
+.screen.active {
+  display: block;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

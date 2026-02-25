@@ -1,0 +1,10 @@
+
+{
+  "name": "Schumacher Automotive DMS",
+  "short_name": "Schumacher DMS",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#1976d2",
+  "icons": []
+}

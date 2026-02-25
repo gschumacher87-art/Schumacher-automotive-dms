@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Schumacher Automotive DMS</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+<!-- Login Screen -->
+<div id="loginScreen" class="screen active">
+  <h1>Schumacher Automotive</h1>
+  <h2>Dealer Management System</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <button onclick="createAdmin()">Create Admin Account</button>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboardScreen" class="screen">
+  <header>
+    <h1>Schumacher Automotive</h1>
+    <button onclick="logout()">Logout</button>
+  </header>
+  <button class="primary" onclick="newJob()">+ New Job</button>
+  <div id="jobsList"></div>
+</div>
+
+<!-- Job Screen -->
+<div id="jobScreen" class="screen">
+  <header>
+    <button onclick="showScreen('dashboardScreen')">← Back</button>
+    <h2>Job Card</h2>
+  </header>
+  <input id="rego" placeholder="Vehicle Rego">
+  <input id="customer" placeholder="Customer Name">
+  <textarea id="notes" placeholder="Notes"></textarea>
+  <input type="file" id="photoInput" accept="image/*">
+  <button onclick="saveJob()">Save Job</button>
+</div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
