@@ -1,52 +1,252 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Schumacher Automotive DMS</title>
-<link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="styles.css">
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    margin: 0;
+}
+header {
+    background: #020617;
+    padding: 15px;
+    font-size: 24px;
+}
+button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 6px;
+}
+input, select {
+    padding: 8px;
+    margin: 5px;
+    width: 200px;
+}
+.card {
+    background: #1e293b;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+}
+</style>
 </head>
 <body>
 
-<div id="app">
+<header>
+Schumacher Automotive DMS
+<button onclick="newJob()">+ New Job</button>
+</header>
 
-<!-- Login Screen -->
-<div id="loginScreen" class="screen active">
-  <h1>Schumacher Automotive</h1>
-  <h2>Dealer Management System</h2>
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <button onclick="createAdmin()">Create Admin Account</button>
-</div>
+<div id="jobs"></div>
 
-<!-- Dashboard -->
-<div id="dashboardScreen" class="screen">
-  <header>
-    <h1>Schumacher Automotive</h1>
-    <button onclick="logout()">Logout</button>
-  </header>
-  <button class="primary" onclick="newJob()">+ New Job</button>
-  <div id="jobsList"></div>
-</div>
+<script>
 
-<!-- Job Screen -->
-<div id="jobScreen" class="screen">
-  <header>
-    <button onclick="showScreen('dashboardScreen')">← Back</button>
-    <h2>Job Card</h2>
-  </header>
-  <input id="rego" placeholder="Vehicle Rego">
-  <input id="customer" placeholder="Customer Name">
-  <textarea id="notes" placeholder="Notes"></textarea>
-  <input type="file" id="photoInput" accept="image/*">
-  <button onclick="saveJob()">Save Job</button>
-</div>
+let jobs = JSON.parse(localStorage.getItem("jobs") || "[]")
 
-</div>
+let techs = ["Glenn", "Tech 2", "Tech 3"]
 
-<script src="app.js"></script>
+function save() {
+ localStorage.setItem("jobs", JSON.stringify(jobs))
+ render()
+}
+
+function newJob() {
+
+let customer = prompt("Customer name")
+if(!customer) return
+
+let vehicle = prompt("Vehicle")
+if(!vehicle) return
+
+let job = {
+
+id: Date.now(),
+invoice: "SCH-" + jobs.length.toString().padStart(4,"0"),
+
+customer,
+vehicle,
+
+tech: techs[0],
+
+parts: [],
+labourHours: 0,
+labourRate: 120,
+
+clockStart: null,
+clockTotal: 0,
+
+status: "In Progress"
+
+}
+
+jobs.push(job)
+save()
+
+}
+
+function addPart(id){
+
+let name = prompt("Part name")
+let price = parseFloat(prompt("Price"))
+let qty = parseFloat(prompt("Qty"))
+
+let job = jobs.find(j=>j.id==id)
+
+job.parts.push({
+name,
+price,
+qty
+})
+
+save()
+
+}
+
+function clockOn(id){
+
+let job = jobs.find(j=>j.id==id)
+
+job.clockStart = Date.now()
+
+save()
+
+}
+
+function clockOff(id){
+
+let job = jobs.find(j=>j.id==id)
+
+if(job.clockStart){
+
+job.clockTotal += Date.now() - job.clockStart
+job.clockStart = null
+
+job.labourHours = job.clockTotal / 3600000
+
+}
+
+save()
+
+}
+
+function completeJob(id){
+
+let job = jobs.find(j=>j.id==id)
+
+job.status = "Completed"
+
+save()
+
+}
+
+function total(job){
+
+let partsTotal = job.parts.reduce((t,p)=>t+p.price*p.qty,0)
+
+let labourTotal = job.labourHours * job.labourRate
+
+return partsTotal + labourTotal
+
+}
+
+function render(){
+
+let div = document.getElementById("jobs")
+
+div.innerHTML=""
+
+jobs.reverse().forEach(job=>{
+
+let el = document.createElement("div")
+
+el.className="card"
+
+el.innerHTML=`
+
+<b>${job.customer}</b><br>
+${job.vehicle}<br>
+Invoice: ${job.invoice}<br>
+Tech:
+<select onchange="jobTech(${job.id}, this.value)">
+${techs.map(t=>`<option ${job.tech==t?"selected":""}>${t}</option>`).join("")}
+</select>
+
+<br><br>
+
+Status: ${job.status}<br>
+
+Labour Hours: ${job.labourHours.toFixed(2)}<br>
+
+Total: $${total(job).toFixed(2)}
+
+<br><br>
+
+<button onclick="clockOn(${job.id})">Clock On</button>
+<button onclick="clockOff(${job.id})">Clock Off</button>
+<button onclick="addPart(${job.id})">Add Part</button>
+<button onclick="completeJob(${job.id})">Complete</button>
+<button onclick="printJob(${job.id})">Print</button>
+
+`
+
+div.appendChild(el)
+
+})
+
+}
+
+function jobTech(id,tech){
+
+let job = jobs.find(j=>j.id==id)
+
+job.tech=tech
+
+save()
+
+}
+
+function printJob(id){
+
+let job = jobs.find(j=>j.id==id)
+
+let w=window.open()
+
+w.document.write(`
+
+<h1>Schumacher Automotive</h1>
+
+Invoice: ${job.invoice}<br>
+Customer: ${job.customer}<br>
+Vehicle: ${job.vehicle}<br>
+Tech: ${job.tech}<br>
+
+<h2>Parts</h2>
+
+${job.parts.map(p=>`${p.name} - ${p.qty} x $${p.price}`).join("<br>")}
+
+<h2>Labour</h2>
+
+${job.labourHours.toFixed(2)} hrs @ $${job.labourRate}
+
+<h2>Total</h2>
+
+$${total(job).toFixed(2)}
+
+`)
+
+w.print()
+
+}
+
+render()
+
+</script>
+
 </body>
 </html>
