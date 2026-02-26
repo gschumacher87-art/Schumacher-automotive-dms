@@ -188,24 +188,10 @@ body {
         <div class="page-title">Dashboard</div>
 <!-- DASHBOARD CALENDAR -->
 
-<div class="card">
 
-    <div class="calendar-header">
-
-        <button onclick="changeMonth(-1)">◀</button>
-
-        <h2 id="dashboardMonthLabel"></h2>
-
-        <button onclick="changeMonth(1)">▶</button>
-
-    </div>
-
-    <div id="dashboardCalendar" class="calendar-grid"></div>
-
-</div>
         <div class="dashboard-grid">
 
-    <div class="card">
+    <div class="card" onclick="showPage('calendar')" style="cursor:pointer;">
   <div class="card-title">Calendar Bookings</div>
   <div class="card-value">Tap a day above to add booking</div>
 </div>
