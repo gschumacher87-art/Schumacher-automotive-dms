@@ -3,6 +3,7 @@ let currentUser = null;
 let jobs = JSON.parse(localStorage.getItem("jobs") || "[]");
 let users = JSON.parse(localStorage.getItem("users") || "[]");
 let invoiceCounter = parseInt(localStorage.getItem("invoiceCounter") || "1");
+let currentDate = new Date();
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
