@@ -143,30 +143,75 @@ body {
     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
     <script>
 const calendarContainer = document.currentScript.parentElement;
+let currentYear = new Date().getFullYear();
 
-const months = [
-"January","February","March","April","May","June",
-"July","August","September","October","November","December"
-];
+function buildCalendar(year) {
+    calendarContainer.innerHTML = "";
 
-months.forEach(month => {
-    const monthDiv = document.createElement("div");
-    monthDiv.style.background = "#f8f9fa";
-    monthDiv.style.padding = "15px";
-    monthDiv.style.borderRadius = "10px";
+    const header = document.createElement("div");
+    header.style.display = "flex";
+    header.style.justifyContent = "space-between";
+    header.style.alignItems = "center";
+    header.style.marginBottom = "20px";
 
-    monthDiv.innerHTML = `
-        <h3 style="margin-bottom:10px;">${month} 2026</h3>
-        <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; font-size:12px;">
-            ${["S","M","T","W","T","F","S"].map(d => `<div style="font-weight:bold;">${d}</div>`).join("")}
-            ${Array.from({length:31}, (_,i) => `<div style="padding:6px; background:white; border-radius:4px; text-align:center;">${i+1}</div>`).join("")}
-        </div>
+    header.innerHTML = `
+        <button onclick="changeYear(-1)">◀</button>
+        <h2>${year}</h2>
+        <button onclick="changeYear(1)">▶</button>
     `;
 
-    calendarContainer.appendChild(monthDiv);
-});
-</script>
+    calendarContainer.appendChild(header);
 
+    const grid = document.createElement("div");
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = "repeat(3, 1fr)";
+    grid.style.gap = "20px";
+
+    const months = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ];
+
+    months.forEach((month, index) => {
+        const monthDiv = document.createElement("div");
+        monthDiv.style.background = "#f8f9fa";
+        monthDiv.style.padding = "15px";
+        monthDiv.style.borderRadius = "10px";
+
+        const firstDay = new Date(year, index, 1).getDay();
+        const daysInMonth = new Date(year, index + 1, 0).getDate();
+
+        let daysHTML = "";
+
+        for (let i = 0; i < firstDay; i++) {
+            daysHTML += `<div></div>`;
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            daysHTML += `<div style="padding:6px; background:white; border-radius:4px; text-align:center; cursor:pointer;">${day}</div>`;
+        }
+
+        monthDiv.innerHTML = `
+            <h3 style="margin-bottom:10px;">${month}</h3>
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; font-size:12px;">
+                ${["S","M","T","W","T","F","S"].map(d => `<div style="font-weight:bold;">${d}</div>`).join("")}
+                ${daysHTML}
+            </div>
+        `;
+
+        grid.appendChild(monthDiv);
+    });
+
+    calendarContainer.appendChild(grid);
+}
+
+function changeYear(direction) {
+    currentYear += direction;
+    buildCalendar(currentYear);
+}
+
+buildCalendar(currentYear);
+</script>
 </div>
 </div>
 
