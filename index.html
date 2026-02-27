@@ -147,20 +147,8 @@ let currentYear = new Date().getFullYear();
 
 function buildCalendar(year) {
     calendarContainer.innerHTML = "";
-
-    const header = document.createElement("div");
-    header.style.display = "flex";
-    header.style.justifyContent = "space-between";
-    header.style.alignItems = "center";
-    header.style.marginBottom = "20px";
-
-    header.innerHTML = `
-        <button onclick="changeYear(-1)">◀</button>
-        <h2>${year}</h2>
-        <button onclick="changeYear(1)">▶</button>
-    `;
-
-    calendarContainer.appendChild(header);
+document.getElementById("yearDisplay").innerText = year;
+    
 
     const grid = document.createElement("div");
     grid.style.display = "grid";
