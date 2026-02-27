@@ -53,3 +53,20 @@ header {
   justify-content: space-between;
   align-items: center;
 }
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.month-grid div {
+    background: var(--card);
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.month-grid div:hover {
+    background: var(--accent);
+}
