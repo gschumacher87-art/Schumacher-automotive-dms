@@ -255,6 +255,8 @@ dayNames.forEach(name => {
     for (let day = 1; day <= daysInMonth; day++) {
         const dayBox = document.createElement("div");
         dayBox.innerText = day;
+        dayBox.style.cursor = "pointer"; 
+        dayBox.onclick = function() { alert(day); };
         dayBox.style.padding = "15px";
         dayBox.style.background = "#f8f9fa";
         dayBox.style.borderRadius = "10px";
