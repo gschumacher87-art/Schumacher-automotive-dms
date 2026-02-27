@@ -173,6 +173,11 @@ document.getElementById("yearDisplay").innerText = year;
 
     months.forEach((month, index) => {
         const monthDiv = document.createElement("div");
+        monthDiv.style.cursor = "pointer";
+
+monthDiv.onclick = function() {
+  showMonthView(month, year, index);
+};
         monthDiv.style.background = "#f8f9fa";
         monthDiv.style.padding = "15px";
         monthDiv.style.borderRadius = "10px";
@@ -208,7 +213,48 @@ function changeYear(direction) {
     currentYear += direction;
     buildCalendar(currentYear);
 }
+function showMonthView(month, year, monthIndex) {
 
+    calendarContainer.innerHTML = "";
+
+    const backBtn = document.createElement("button");
+    backBtn.innerText = "← Back";
+    backBtn.style.marginBottom = "20px";
+    backBtn.onclick = function () {
+        buildCalendar(year);
+    };
+
+    calendarContainer.appendChild(backBtn);
+
+    const title = document.createElement("h2");
+    title.innerText = month + " " + year;
+    calendarContainer.appendChild(title);
+
+    const daysGrid = document.createElement("div");
+    daysGrid.style.display = "grid";
+    daysGrid.style.gridTemplateColumns = "repeat(7, 1fr)";
+    daysGrid.style.gap = "10px";
+    daysGrid.style.marginTop = "20px";
+
+    const firstDay = new Date(year, monthIndex, 1).getDay();
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+        daysGrid.innerHTML += "<div></div>";
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayBox = document.createElement("div");
+        dayBox.innerText = day;
+        dayBox.style.padding = "15px";
+        dayBox.style.background = "#f8f9fa";
+        dayBox.style.borderRadius = "10px";
+        dayBox.style.textAlign = "center";
+        daysGrid.appendChild(dayBox);
+    }
+
+    calendarContainer.appendChild(daysGrid);
+}
 buildCalendar(currentYear);
 </script>
 </div>
