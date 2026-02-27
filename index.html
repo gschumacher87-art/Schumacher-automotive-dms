@@ -256,7 +256,9 @@ dayNames.forEach(name => {
         const dayBox = document.createElement("div");
         dayBox.innerText = day;
         dayBox.style.cursor = "pointer"; 
-        dayBox.onclick = function() { alert(day); };
+        dayBox.onclick = function() {
+    openDay(day);
+};
         dayBox.style.padding = "15px";
         dayBox.style.background = "#f8f9fa";
         dayBox.style.borderRadius = "10px";
@@ -285,6 +287,9 @@ function openCalendar() {
 
 function closeCalendar() {
     document.getElementById("bookingsCalendar").style.display = "none";
+}
+    function openDay(day) {
+    alert("Opening day " + day);
 }
 </script>
 
