@@ -134,17 +134,28 @@ body {
  <div id="bookingsCalendar" style="display:none; margin-top:20px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>Bookings – 2026</h2>
+        <h2>
+  Bookings -
+  <button onclick="changeYear(-1)">&lt;&lt;</button>
+  <span id="yearDisplay"></span>
+  <button onclick="changeYear(1)">&gt;&gt;</button>
+</h2>
         <button onclick="closeCalendar()" style="background:#ff4d4d; border:none; color:white; padding:8px 14px; border-radius:8px; cursor:pointer;">
             ✕ Close
         </button>
     </div>
 
-    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
-    <script>
-const calendarContainer = document.currentScript.parentElement;
+    <div id="calendarGrid"></div>
+
+<script> 
+    
+const calendarContainer = document.getElementById("calendarGrid");
 let currentYear = new Date().getFullYear();
 
+    function changeYear(direction) {
+  currentYear += direction;
+  buildCalendar(currentYear);
+}
 function buildCalendar(year) {
     calendarContainer.innerHTML = "";
 document.getElementById("yearDisplay").innerText = year;
