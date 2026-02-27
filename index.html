@@ -116,7 +116,7 @@ body {
     <h1>Dashboard</h1>
 
     <div class="cards">
-        <div class="card">
+        <div class="card" onclick="openCalendar()">
             <h3>Bookings</h3>
             <p>0</p>
         </div>
@@ -131,13 +131,37 @@ body {
             <p>0</p>
         </div>
     </div>
+<div id="bookingsCalendar" style="display:none; margin-top:20px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
 
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>Bookings – 2026</h2>
+        <button onclick="closeCalendar()" style="background:#ff4d4d; border:none; color:white; padding:8px 14px; border-radius:8px; cursor:pointer;">
+            ✕ Close
+        </button>
+    </div>
+
+    <p>Calendar will expand here.</p>
+
+</div>
     <div class="jobs">
         <h2>Jobs Today</h2>
         <p>No jobs yet.</p>
     </div>
 
-</div>
+151 </div>
+
+152 <script>
+153 function openCalendar() {
+154     document.getElementById("bookingsCalendar").style.display = "block";
+155 }
+
+156 function closeCalendar() {
+157     document.getElementById("bookingsCalendar").style.display = "none";
+158 }
+159 </script>
+
+160 </body>
+161 </html>
 
 </body>
 </html>
