@@ -1,445 +1,251 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Schumacher Automotive DMS</title>
+<title>Schumacher Automotive Workshop System</title>
 
 <style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
 
-/* ===== APP LAYOUT ===== */
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    display: flex;
-    height: 100vh;
-    background: #f3f4f6;
-}
-
-/* ===== SIDEBAR ===== */
+body { display:flex; background:#f4f6f9; height:100vh; }
 
 .sidebar {
-    width: 260px;
-    background: #0f172a;
-    color: white;
-    padding: 20px;
+    width:250px;
+    background:#0b1b3b;
+    color:white;
+    padding:20px;
 }
 
-.sidebar-title {
-    font-size: 20px;
-    margin-bottom: 30px;
+.sidebar h2 { margin-bottom:30px; }
+
+.sidebar button {
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    background:none;
+    border:none;
+    color:#cfd6e6;
+    text-align:left;
+    cursor:pointer;
+    font-size:15px;
 }
 
-.nav-button {
-    display: block;
-    width: 100%;
-    background: none;
-    border: none;
-    color: #cbd5e1;
-    text-align: left;
-    padding: 12px;
-    margin-bottom: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 6px;
-}
-
-.nav-button:hover {
-    background: #1e293b;
-    color: white;
-}
-
-/* ===== MAIN AREA ===== */
+.sidebar button:hover { color:white; }
 
 .main {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
+    flex:1;
+    padding:30px;
+    overflow:auto;
 }
 
-/* ===== PAGE TITLE ===== */
+.hidden { display:none; }
 
-.page-title {
-    font-size: 28px;
-    margin-bottom: 20px;
-}
-
-/* ===== DASHBOARD ===== */
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 20px;
-}
+.cards { display:flex; gap:20px; margin-bottom:30px; }
 
 .card {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    flex:1;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
 }
 
-.card:hover {
-    background: #e2e8f0;
-}
+.card h3 { font-size:14px; color:#888; margin-bottom:10px; }
+.card p { font-size:26px; font-weight:bold; }
 
-.card-title {
-    font-size: 14px;
-    color: #64748b;
-}
-
-.card-value {
-    font-size: 26px;
-    font-weight: bold;
-}
-
-/* DASHBOARD TAB CONTENT */
-
-.dashboard-tab {
-    display: none;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-/* ===== CALENDAR ===== */
-
-.calendar-header {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.calendar-grid {
-    display: grid;
+.calendar {
+    display:grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
+    gap:10px;
 }
 
-.calendar-day {
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
+.day {
+    background:white;
+    padding:15px;
+    border-radius:8px;
+    min-height:100px;
+    cursor:pointer;
+    box-shadow:0 1px 4px rgba(0,0,0,0.05);
 }
 
-.calendar-day:hover {
-    background: #e2e8f0;
+.day:hover { background:#eef2ff; }
+
+.job-item {
+    background:#0b1b3b;
+    color:white;
+    padding:4px;
+    margin-top:5px;
+    border-radius:4px;
+    font-size:12px;
 }
 
-.day-number {
-    font-weight: bold;
+input, select {
+    width:100%;
+    padding:8px;
+    margin-bottom:10px;
 }
 
-.day-hours {
-    font-size: 13px;
-    color: #555;
+button.action {
+    padding:10px 15px;
+    background:#0b1b3b;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
 }
+
+.job-card {
+    background:white;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:8px;
+}
+
+.job-card small { color:#666; }
 
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
-
-    <div class="sidebar-title">
-        Schumacher Automotive
-    </div>
-
-    <button class="nav-button" onclick="showPage('dashboard')">
-        Dashboard
-    </button>
-
-    <button class="nav-button" onclick="showPage('customers')">
-        Customers
-    </button>
-
-    <button class="nav-button" onclick="showPage('jobs')">
-        Jobs
-    </button>
-
-    <button class="nav-button" onclick="showPage('calendar')">
-        Calendar
-    </button>
-
-    <button class="nav-button" onclick="showPage('technicians')">
-        Technicians
-    </button>
-
+    <h2>Schumacher Automotive</h2>
+    <button onclick="showTab('dashboard')">Dashboard</button>
+    <button onclick="showTab('calendar')">Calendar</button>
+    <button onclick="showTab('jobs')">Jobs</button>
 </div>
-
-
-<!-- MAIN AREA -->
 
 <div class="main">
 
-    <!-- DASHBOARD PAGE -->
-
-    <div id="dashboardPage">
-
-        <div class="page-title">Dashboard</div>
-<!-- DASHBOARD CALENDAR -->
-
-
-        <div class="dashboard-grid">
-
-    <div class="card" onclick="showPage('calendar')" style="cursor:pointer;">
-  <div class="card-title">Calendar Bookings</div>
-  <div class="card-value">Tap a day above to add booking</div>
-</div>
-
-    <div class="card" onclick="showPage('calendar')" style="cursor:pointer;">
-        <div class="card-title">Vehicles in Workshop</div>
-        <div class="card-value">0</div>
-    </div>
-
-    <div class="card" onclick="showPage('parts')" style="cursor:pointer;">
-        <div class="card-title">Hours Booked Today</div>
-        <div class="card-value">0</div>
-    </div>
-
-</div>
-        <!-- TAB CONTENT -->
-
-        <div id="jobsTab" class="dashboard-tab">
-            <h2>Jobs Today</h2>
-            <p>No jobs yet.</p>
+    <!-- DASHBOARD -->
+    <div id="dashboardTab">
+        <h1>Dashboard</h1>
+        <div class="cards">
+            <div class="card">
+                <h3>Total Jobs</h3>
+                <p id="totalJobs">0</p>
+            </div>
+            <div class="card">
+                <h3>Vehicles In Progress</h3>
+                <p id="inProgress">0</p>
+            </div>
+            <div class="card">
+                <h3>Completed Jobs</h3>
+                <p id="completedJobs">0</p>
+            </div>
         </div>
-
-        <div id="vehiclesTab" class="dashboard-tab">
-            <h2>Vehicles in Workshop</h2>
-            <p>No vehicles currently in workshop.</p>
-        </div>
-
-        <div id="hoursTab" class="dashboard-tab">
-            <h2>Hours Booked Today</h2>
-            <p>0 hours booked.</p>
-        </div>
-
     </div>
 
-
-    <!-- CUSTOMERS PAGE -->
-
-    <div id="customersPage" style="display:none">
-
-        <div class="page-title">Customers</div>
-
-        <button onclick="addCustomer()">Add Customer</button>
-
-        <div id="customersList"></div>
-
+    <!-- CALENDAR -->
+    <div id="calendarTab" class="hidden">
+        <h1>Workshop Calendar</h1>
+        <div class="calendar" id="calendar"></div>
     </div>
 
+    <!-- JOBS -->
+    <div id="jobsTab" class="hidden">
+        <h1>Create Job</h1>
 
-    <!-- JOBS PAGE -->
+        <input type="text" id="customerName" placeholder="Customer Name">
+        <input type="text" id="vehicle" placeholder="Vehicle">
+        <input type="text" id="rego" placeholder="Registration">
+        <input type="text" id="parts" placeholder="Parts Used">
+        <input type="number" id="labour" placeholder="Labour Hours">
+        <select id="status">
+            <option>Booked</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+        </select>
+        <button class="action" onclick="addJob()">Add Job</button>
 
-    <div id="jobsPage" style="display:none">
-
-        <div class="page-title">Jobs</div>
-
-        <button onclick="addJob()">Add Job</button>
-
-        <div id="jobsList"></div>
-
+        <h2 style="margin-top:30px;">All Jobs</h2>
+        <div id="jobList"></div>
     </div>
-
-
-    <!-- CALENDAR PAGE -->
-
-    <div id="calendarScreen" class="screen">
-
-        <div class="page-title">Workshop Calendar</div>
-
-        <div class="calendar-header">
-
-            <button onclick="changeMonth(-1)">◀</button>
-
-            <h2 id="monthLabel" onclick="openMonthPicker()" style="cursor:pointer;"></h2>
-
-            <button onclick="changeMonth(1)">▶</button>
-
-        </div>
-<div id="monthPicker" style="display:none;">
-    <div class="month-grid">
-        <div onclick="selectMonth(0)">January</div>
-        <div onclick="selectMonth(1)">February</div>
-        <div onclick="selectMonth(2)">March</div>
-        <div onclick="selectMonth(3)">April</div>
-        <div onclick="selectMonth(4)">May</div>
-        <div onclick="selectMonth(5)">June</div>
-        <div onclick="selectMonth(6)">July</div>
-        <div onclick="selectMonth(7)">August</div>
-        <div onclick="selectMonth(8)">September</div>
-        <div onclick="selectMonth(9)">October</div>
-        <div onclick="selectMonth(10)">November</div>
-        <div onclick="selectMonth(11)">December</div>
-    </div>
-</div>
-        <div id="calendar" class="calendar-grid"></div>
-
-    </div>
-
-
-    <!-- TECHNICIANS PAGE -->
-
-    <div id="techniciansPage" style="display:none">
-
-        <div class="page-title">Technicians</div>
-
-        <button onclick="addTech()">Add Technician</button>
-
-        <div id="techList"></div>
-
-    </div>
-
 
 </div>
-
 
 <script>
 
-/* PAGE SWITCHING */
+let jobs = JSON.parse(localStorage.getItem("jobs")) || [];
 
-function showPage(page) {
-
-    document.getElementById("dashboardPage").style.display = "none";
-    document.getElementById("customersPage").style.display = "none";
-    document.getElementById("jobsPage").style.display = "none";
-    document.getElementById("calendarPage").style.display = "none";
-    document.getElementById("techniciansPage").style.display = "none";
-
-    document.getElementById(page + "Page").style.display = "block";
-
-}
-
-
-/* DASHBOARD TAB SWITCHING */
-
-function openTab(tabName) {
-
-    let tabs = document.getElementsByClassName("dashboard-tab");
-
-    for (let i = 0; i < tabs.length; i++) {
-        tabs[i].style.display = "none";
-    }
-
-    document.getElementById(tabName).style.display = "block";
-
-}
-
-
-/* CALENDAR */
-
-let currentDate = new Date();
-
-let workshopHours =
-JSON.parse(localStorage.getItem("workshopHours")) || {};
-
-function renderCalendar() {
-
-    const calendar = document.getElementById("calendar");
-
-    const dashboardCalendar = document.getElementById("dashboardCalendar");
- 
-    const monthLabel = document.getElementById("monthLabel");
-
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-
-    monthLabel.innerText =
-    currentDate.toLocaleString("default",
-    { month: "long", year: "numeric" });
-
-    calendar.innerHTML = "";
-    dashboardCalendar.innerHTML = "";
-    const daysInMonth =
-    new Date(year, month+1, 0).getDate();
-
-    for (let day=1; day<=daysInMonth; day++) {
-
-        const key = year+"-"+month+"-"+day;
-
-        if (!workshopHours[key]) {
-            workshopHours[key] =
-            { available:8, booked:0 };
-        }
-
-        const box =
-        document.createElement("div");
-
-        box.className = "calendar-day";
-
-        box.innerHTML =
-        "<div class='day-number'>"+day+"</div>"+
-        "<div class='day-hours'>"+
-        workshopHours[key].booked+
-        " / "+
-        workshopHours[key].available+
-        " hrs</div>";
-
-        box.onclick = function() {
-
-            let hrs =
-            prompt("Available hours:",
-            workshopHours[key].available);
-
-            if (hrs!=null) {
-
-                workshopHours[key].available = hrs;
-
-                localStorage.setItem(
-                "workshopHours",
-                JSON.stringify(workshopHours));
-
-                renderCalendar();
-
-            }
-
-        };
-
-        calendar.appendChild(box);
-        dashboardCalendar.appendChild(box.cloneNode(true));
-
-    }
-
-}
-
-function changeMonth(n) {
-
-    currentDate.setMonth(
-    currentDate.getMonth()+n);
-
+function saveJobs(){
+    localStorage.setItem("jobs", JSON.stringify(jobs));
+    renderJobs();
+    updateDashboard();
     renderCalendar();
-
 }
 
+function showTab(tab){
+    document.getElementById("dashboardTab").classList.add("hidden");
+    document.getElementById("calendarTab").classList.add("hidden");
+    document.getElementById("jobsTab").classList.add("hidden");
+
+    document.getElementById(tab+"Tab").classList.remove("hidden");
+}
+
+function addJob(){
+    const job = {
+        id: Date.now(),
+        customer: customerName.value,
+        vehicle: vehicle.value,
+        rego: rego.value,
+        parts: parts.value,
+        labour: labour.value,
+        status: status.value,
+        date: new Date().getDate()
+    };
+
+    jobs.push(job);
+    saveJobs();
+
+    document.querySelectorAll("input").forEach(i=>i.value="");
+}
+
+function renderJobs(){
+    const list = document.getElementById("jobList");
+    list.innerHTML = "";
+
+    jobs.forEach(job=>{
+        list.innerHTML += `
+        <div class="job-card">
+            <strong>${job.customer}</strong> - ${job.vehicle} (${job.rego})<br>
+            <small>Parts: ${job.parts} | Labour: ${job.labour} hrs</small><br>
+            <small>Status: ${job.status}</small>
+        </div>`;
+    });
+}
+
+function updateDashboard(){
+    totalJobs.textContent = jobs.length;
+    inProgress.textContent = jobs.filter(j=>j.status==="In Progress").length;
+    completedJobs.textContent = jobs.filter(j=>j.status==="Completed").length;
+}
+
+function renderCalendar(){
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
+    for(let i=1;i<=31;i++){
+        const dayDiv = document.createElement("div");
+        dayDiv.className="day";
+        dayDiv.innerHTML = "<strong>"+i+"</strong>";
+
+        jobs.filter(j=>j.date===i).forEach(job=>{
+            const item=document.createElement("div");
+            item.className="job-item";
+            item.textContent=job.customer;
+            dayDiv.appendChild(item);
+        });
+
+        cal.appendChild(dayDiv);
+    }
+}
+
+renderJobs();
+updateDashboard();
 renderCalendar();
 
-
-/* PLACEHOLDERS */
-
-function addCustomer(){ alert("Customer system coming next"); }
-
-function addJob(){ alert("Job system coming next"); }
-
-function addTech(){ alert("Technician system coming next"); }
-
-
-/* DEFAULT TAB */
-
-openTab("jobsTab");
-
 </script>
-
 
 </body>
 </html>
