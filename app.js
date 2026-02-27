@@ -88,3 +88,13 @@ function renderJobs() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }
+function openMonthPicker() {
+    const picker = document.getElementById("monthPicker");
+    picker.style.display = picker.style.display === "none" ? "block" : "none";
+}
+
+function selectMonth(monthIndex) {
+    currentDate.setMonth(monthIndex);
+    document.getElementById("monthPicker").style.display = "none";
+    renderCalendar();
+}
