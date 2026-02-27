@@ -235,6 +235,15 @@ function showMonthView(month, year, monthIndex) {
     daysGrid.style.gridTemplateColumns = "repeat(7, 1fr)";
     daysGrid.style.gap = "10px";
     daysGrid.style.marginTop = "20px";
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+dayNames.forEach(name => {
+    const dayHeader = document.createElement("div");
+    dayHeader.innerText = name;
+    dayHeader.style.fontWeight = "bold";
+    dayHeader.style.textAlign = "center";
+    daysGrid.appendChild(dayHeader);
+});
 
     const firstDay = new Date(year, monthIndex, 1).getDay();
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
