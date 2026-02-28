@@ -229,7 +229,6 @@ th{
 
 let currentYear = new Date().getFullYear();
 let selectedDateKey = null;
-
 let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
 
 const calendarGrid = document.getElementById("calendarGrid");
@@ -237,13 +236,9 @@ const monthView = document.getElementById("monthView");
 const dayPanel = document.getElementById("dayPanel");
 const jobTableBody = document.getElementById("jobTableBody");
 
-/* SAVE */
-
 function saveJobs(){
     localStorage.setItem("workshopJobs", JSON.stringify(jobs));
 }
-
-/* OPEN CLOSE */
 
 function openCalendar(){
     document.getElementById("calendarWrapper").style.display="block";
@@ -252,8 +247,6 @@ function openCalendar(){
 function closeCalendar(){
     document.getElementById("calendarWrapper").style.display="none";
 }
-
-/* YEAR */
 
 function changeYear(dir){
     currentYear += dir;
@@ -280,8 +273,6 @@ function buildCalendar(){
     });
 }
 
-/* MONTH */
-
 function showMonth(month,monthIndex){
 
     calendarGrid.style.display="none";
@@ -304,7 +295,7 @@ function showMonth(month,monthIndex){
         const dayBox=document.createElement("div");
         dayBox.className="day-box";
         dayBox.innerText=d;
-        dayBox.onclick=()=>openDayView(d,month,monthIndex);
+        dayBox.onclick=()=>openDayView(d,monthIndex);
         grid.appendChild(dayBox);
     }
 
@@ -313,16 +304,14 @@ function showMonth(month,monthIndex){
     monthView.appendChild(grid);
 }
 
-/* DAY */
-
-function openDayView(day,month,monthIndex){
+function openDayView(day,monthIndex){
 
     monthView.innerHTML="";
     dayPanel.style.display="block";
 
-    const date=new Date(currentYear,monthIndex,day);
     selectedDateKey=`${currentYear}-${monthIndex}-${day}`;
 
+    const date=new Date(currentYear,monthIndex,day);
     document.getElementById("dayTitle").innerText=
         date.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
 
@@ -331,16 +320,25 @@ function openDayView(day,month,monthIndex){
     }
 
     renderJobs();
+    updateBookingsCard();
 }
-
-/* BACK */
 
 function backToMonth(){
-    const parts=selectedDateKey.split("-");
-    showMonth("",parseInt(parts[1]));
+    buildCalendar();
 }
 
-/* ADD */
+function updateBookingsCard(){
+    if(!selectedDateKey){
+        document.getElementById("bookingCount").innerText=0;
+        return;
+    }
+
+    const count = jobs[selectedDateKey]
+        ? jobs[selectedDateKey].length
+        : 0;
+
+    document.getElementById("bookingCount").innerText=count;
+}
 
 function addVehicle(){
 
@@ -357,17 +355,15 @@ function addVehicle(){
     jobs[selectedDateKey].push({rego,customer,type,status,notes});
     saveJobs();
     renderJobs();
+    updateBookingsCard();
 }
-
-/* DELETE */
 
 function deleteJob(index){
     jobs[selectedDateKey].splice(index,1);
     saveJobs();
     renderJobs();
+    updateBookingsCard();
 }
-
-/* RENDER */
 
 function renderJobs(){
 
@@ -385,20 +381,9 @@ function renderJobs(){
         `;
         jobTableBody.appendChild(row);
     });
-
-    updateBookingCount();
-}
-
-/* DASHBOARD COUNT */
-
-function updateBookingCount(){
-    let total=0;
-    Object.values(jobs).forEach(day=> total+=day.length);
-    document.getElementById("bookingCount").innerText=total;
 }
 
 buildCalendar();
-updateBookingCount();
 
 </script>
 
