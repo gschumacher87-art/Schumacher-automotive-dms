@@ -204,9 +204,10 @@ th {
 
 </div>
 
-<script>
+    <script>
 
 let currentYear = new Date().getFullYear();
+
 const calendarGrid = document.getElementById("calendarGrid");
 const monthView = document.getElementById("monthView");
 const dayPanel = document.getElementById("dayPanel");
@@ -219,6 +220,8 @@ function closeCalendar() {
     document.getElementById("calendarWrapper").style.display = "none";
 }
 
+/* YEAR NAVIGATION */
+
 function changeYear(dir) {
     currentYear += dir;
     buildCalendar();
@@ -226,10 +229,13 @@ function changeYear(dir) {
 
 function buildCalendar() {
 
-    calendarGrid.innerHTML = "";
     document.getElementById("yearDisplay").innerText = currentYear;
+
+    calendarGrid.innerHTML = "";
     monthView.innerHTML = "";
     dayPanel.style.display = "none";
+
+    calendarGrid.style.display = "grid";
 
     const months = [
         "January","February","March","April","May","June",
@@ -238,29 +244,37 @@ function buildCalendar() {
 
     months.forEach((month, index) => {
 
-        const monthBox = document.createElement("div");
-        monthBox.style.background = "#f8f9fa";
-        monthBox.style.padding = "15px";
-        monthBox.style.borderRadius = "10px";
-        monthBox.style.cursor = "pointer";
-        monthBox.innerHTML = `<h3>${month}</h3>`;
+        const box = document.createElement("div");
+        box.style.background = "#f8f9fa";
+        box.style.padding = "15px";
+        box.style.borderRadius = "10px";
+        box.style.cursor = "pointer";
+        box.innerHTML = `<h3>${month}</h3>`;
 
-        monthBox.onclick = function() {
+        box.onclick = function() {
             showMonth(month, index);
         };
 
-        calendarGrid.appendChild(monthBox);
+        calendarGrid.appendChild(box);
     });
 }
 
+/* MONTH VIEW */
+
 function showMonth(month, monthIndex) {
 
-    calendarGrid.innerHTML = "";
+    calendarGrid.style.display = "none";
     monthView.innerHTML = "";
+
+    const backBtn = document.createElement("button");
+    backBtn.innerText = "← Back to Year";
+    backBtn.style.marginBottom = "15px";
+    backBtn.onclick = function() {
+        buildCalendar();
+    };
 
     const title = document.createElement("h2");
     title.innerText = month + " " + currentYear;
-    monthView.appendChild(title);
 
     const grid = document.createElement("div");
     grid.style.display = "grid";
@@ -271,6 +285,7 @@ function showMonth(month, monthIndex) {
     const daysInMonth = new Date(currentYear, monthIndex + 1, 0).getDate();
 
     for (let day = 1; day <= daysInMonth; day++) {
+
         const dayBox = document.createElement("div");
         dayBox.innerText = day;
         dayBox.style.padding = "15px";
@@ -286,8 +301,12 @@ function showMonth(month, monthIndex) {
         grid.appendChild(dayBox);
     }
 
+    monthView.appendChild(backBtn);
+    monthView.appendChild(title);
     monthView.appendChild(grid);
 }
+
+/* DAY VIEW */
 
 function openDayView(day, month, monthIndex) {
 
@@ -296,13 +315,19 @@ function openDayView(day, month, monthIndex) {
 
     const date = new Date(currentYear, monthIndex, day);
     const options = { weekday: 'long', day: 'numeric', month: 'long' };
+
     document.getElementById("dayTitle").innerText =
         date.toLocaleDateString('en-AU', options);
-}
 
-function backToMonth() {
-    dayPanel.style.display = "none";
-    buildCalendar();
+    const backBtn = document.createElement("button");
+    backBtn.innerText = "← Back to Month";
+    backBtn.style.marginLeft = "15px";
+    backBtn.onclick = function() {
+        showMonth(month, monthIndex);
+        dayPanel.style.display = "none";
+    };
+
+    document.querySelector(".day-header").appendChild(backBtn);
 }
 
 buildCalendar();
