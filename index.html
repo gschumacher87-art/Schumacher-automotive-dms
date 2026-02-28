@@ -213,12 +213,15 @@ monthDiv.onclick = function() {
 
     calendarContainer.appendChild(grid);
 }
-
+let monthViewContainer = document.createElement("div");
+monthViewContainer.id = "monthViewContainer";
+calendarContainer.appendChild(monthViewContainer);
 function changeYear(direction) {
     currentYear += direction;
     buildCalendar(currentYear);
 }
 function showMonthView(month, year, monthIndex) {
+    monthViewContainer.innerHTML = "";
 
     
 
@@ -226,7 +229,7 @@ function showMonthView(month, year, monthIndex) {
 
     const title = document.createElement("h2");
     title.innerText = month + " " + year;
-    calendarContainer.appendChild(title);
+    monthViewContainer.appendChild(title);
 
     const daysGrid = document.createElement("div");
     daysGrid.style.display = "grid";
@@ -265,7 +268,7 @@ dayNames.forEach(name => {
         daysGrid.appendChild(dayBox);
     }
 
-    calendarContainer.appendChild(daysGrid);
+    monthViewContainer.appendChild(daysGrid);
 }
 buildCalendar(currentYear);
 </script>
