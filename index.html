@@ -146,7 +146,7 @@ body {
     </div>
 
     <div id="calendarGrid"></div>
-
+<div id="monthViewContainer"></div>
      <div id="dayPanel" style="display: none;">
     <h2>Day Booking View</h2>
     <p>This will become your Tuesday 3rd March layout.</p>
@@ -164,7 +164,7 @@ let currentYear = new Date().getFullYear();
 function buildCalendar(year) {
     calendarContainer.innerHTML = "";
 document.getElementById("yearDisplay").innerText = year;
-    
+    document.getElementById("calendarGrid").style.display = "none";
 
     const grid = document.createElement("div");
     grid.style.display = "grid";
