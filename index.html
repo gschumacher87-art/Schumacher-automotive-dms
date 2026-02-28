@@ -41,21 +41,12 @@ body {
     cursor: pointer;
 }
 
-.sidebar ul li:hover {
-    opacity: 0.7;
-}
-
-/* Main Content */
+/* Main */
 .main {
     flex: 1;
     padding: 30px;
 }
 
-.main h1 {
-    margin-bottom: 25px;
-}
-
-/* Cards Row */
 .cards {
     display: flex;
     gap: 20px;
@@ -68,33 +59,61 @@ body {
     border-radius: 10px;
     flex: 1;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    cursor: pointer;
 }
 
-.card h3 {
-    margin-bottom: 10px;
-    font-size: 16px;
-    color: #555;
-}
-
-.card p {
-    font-size: 22px;
-    font-weight: bold;
-}
-
-/* Jobs Section */
-.jobs {
+/* Calendar Wrapper */
+.calendar-wrapper {
+    display: none;
     background: white;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.jobs h2 {
-    margin-bottom: 15px;
+/* Month Grid */
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
 }
 
-.jobs p {
-    color: #666;
+/* Day View Panel */
+.day-panel {
+    display: none;
+    margin-top: 20px;
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.add-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #f1f1f1;
 }
 </style>
 </head>
@@ -113,63 +132,104 @@ body {
 </div>
 
 <div class="main">
-    <h1>Dashboard</h1>
 
-    <div class="cards">
-        <div class="card" onclick="openCalendar()">
-            <h3>Bookings</h3>
-            <p>0</p>
-        </div>
+<h1>Dashboard</h1>
 
-        <div class="card">
-            <h3>Vehicles in Workshop</h3>
-            <p>0</p>
-        </div>
-
-        <div class="card">
-            <h3>Hours Booked Today</h3>
-            <p>0</p>
-        </div>
+<div class="cards">
+    <div class="card" onclick="openCalendar()">
+        <h3>Bookings</h3>
+        <p>0</p>
     </div>
- <div id="bookingsCalendar" style="display:none; margin-top:20px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>
-  Bookings -
-  <button onclick="changeYear(-1)">&lt;&lt;</button>
-  <span id="yearDisplay"></span>
-  <button onclick="changeYear(1)">&gt;&gt;</button>
-</h2>
-        <button onclick="closeCalendar()" style="background:#ff4d4d; border:none; color:white; padding:8px 14px; border-radius:8px; cursor:pointer;">
-            ✕ Close
-        </button>
+    <div class="card">
+        <h3>Vehicles in Workshop</h3>
+        <p>0</p>
     </div>
-
-    <div id="calendarGrid"></div>
-<div id="monthViewContainer"></div>
-     <div id="dayPanel" style="display: none;">
-    <h2>Day Booking View</h2>
-    <p>This will become your Tuesday 3rd March layout.</p>
+    <div class="card">
+        <h3>Hours Booked Today</h3>
+        <p>0</p>
+    </div>
 </div>
 
-<script> 
-    
-const calendarContainer = document.getElementById("calendarGrid");
+<!-- CALENDAR -->
+<div id="calendarWrapper" class="calendar-wrapper">
+
+    <div class="day-header">
+        <h2>
+            Bookings -
+            <button onclick="changeYear(-1)">&lt;&lt;</button>
+            <span id="yearDisplay"></span>
+            <button onclick="changeYear(1)">&gt;&gt;</button>
+        </h2>
+        <button onclick="closeCalendar()" style="background:#ff4d4d;color:white;border:none;padding:8px 14px;border-radius:8px;">✕ Close</button>
+    </div>
+
+    <div id="calendarGrid" class="month-grid"></div>
+
+    <div id="monthView"></div>
+
+    <!-- DAY PANEL -->
+    <div id="dayPanel" class="day-panel">
+
+        <div class="day-header">
+            <h2 id="dayTitle"></h2>
+            <button onclick="backToMonth()">← Back</button>
+        </div>
+
+        <button class="add-btn">+ Add Vehicle</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Rego</th>
+                    <th>Customer</th>
+                    <th>Job Type</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="jobTableBody">
+                <tr>
+                    <td>ABC123</td>
+                    <td>John Smith</td>
+                    <td>Service</td>
+                    <td>In Progress</td>
+                    <td>Check brakes</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
 let currentYear = new Date().getFullYear();
+const calendarGrid = document.getElementById("calendarGrid");
+const monthView = document.getElementById("monthView");
+const dayPanel = document.getElementById("dayPanel");
 
-    function changeYear(direction) {
-  currentYear += direction;
-  buildCalendar(currentYear);
+function openCalendar() {
+    document.getElementById("calendarWrapper").style.display = "block";
 }
-function buildCalendar(year) {
-    calendarContainer.innerHTML = "";
-document.getElementById("yearDisplay").innerText = year;
-    
 
-    const grid = document.createElement("div");
-    grid.style.display = "grid";
-    grid.style.gridTemplateColumns = "repeat(3, 1fr)";
-    grid.style.gap = "20px";
+function closeCalendar() {
+    document.getElementById("calendarWrapper").style.display = "none";
+}
+
+function changeYear(dir) {
+    currentYear += dir;
+    buildCalendar();
+}
+
+function buildCalendar() {
+
+    calendarGrid.innerHTML = "";
+    document.getElementById("yearDisplay").innerText = currentYear;
+    monthView.innerHTML = "";
+    dayPanel.style.display = "none";
 
     const months = [
         "January","February","March","April","May","June",
@@ -177,131 +237,76 @@ document.getElementById("yearDisplay").innerText = year;
     ];
 
     months.forEach((month, index) => {
-        const monthDiv = document.createElement("div");
-        monthDiv.style.cursor = "pointer";
 
-monthDiv.onclick = function() {
-  showMonthView(month, year, index);
-};
-        monthDiv.style.background = "#f8f9fa";
-        monthDiv.style.padding = "15px";
-        monthDiv.style.borderRadius = "10px";
+        const monthBox = document.createElement("div");
+        monthBox.style.background = "#f8f9fa";
+        monthBox.style.padding = "15px";
+        monthBox.style.borderRadius = "10px";
+        monthBox.style.cursor = "pointer";
+        monthBox.innerHTML = `<h3>${month}</h3>`;
 
-        const firstDay = new Date(year, index, 1).getDay();
-        const daysInMonth = new Date(year, index + 1, 0).getDate();
+        monthBox.onclick = function() {
+            showMonth(month, index);
+        };
 
-        let daysHTML = "";
-
-        for (let i = 0; i < firstDay; i++) {
-            daysHTML += `<div></div>`;
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-    daysHTML += `<div style="padding:6px; background:white; border-radius:4px; text-align:center;">${day}</div>`;
-}
-
-        monthDiv.innerHTML = `
-            <h3 style="margin-bottom:10px;">${month}</h3>
-            <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; font-size:12px;">
-                ${["S","M","T","W","T","F","S"].map(d => `<div style="font-weight:bold;">${d}</div>`).join("")}
-                ${daysHTML}
-            </div>
-        `;
-
-        grid.appendChild(monthDiv);
+        calendarGrid.appendChild(monthBox);
     });
-
-    calendarContainer.appendChild(grid);
 }
-let monthViewContainer = document.createElement("div");
-monthViewContainer.id = "monthViewContainer";
-calendarContainer.appendChild(monthViewContainer);
-function changeYear(direction) {
-    currentYear += direction;
-    buildCalendar(currentYear);
-}
-function showMonthView(month, year, monthIndex) {
 
-    calendarContainer.innerHTML = "";   // add this line
+function showMonth(month, monthIndex) {
 
-    monthViewContainer.innerHTML = "";
-    monthViewContainer.innerHTML = "<h2>TEST MONTH VIEW</h2>";
-    monthViewContainer.style.display = "block";
-    monthViewContainer.style.marginTop = "30px";
-    monthViewContainer.style.padding = "20px";
-    monthViewContainer.style.background = "#f8f9fa";
-    monthViewContainer.style.borderRadius = "12px";
-
-    
-
-    
+    calendarGrid.innerHTML = "";
+    monthView.innerHTML = "";
 
     const title = document.createElement("h2");
-    title.innerText = month + " " + year;
-    monthViewContainer.appendChild(title);
+    title.innerText = month + " " + currentYear;
+    monthView.appendChild(title);
 
-    const daysGrid = document.createElement("div");
-    daysGrid.style.display = "grid";
-    daysGrid.style.gridTemplateColumns = "repeat(7, 1fr)";
-    daysGrid.style.gap = "10px";
-    daysGrid.style.marginTop = "20px";
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const grid = document.createElement("div");
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = "repeat(7, 1fr)";
+    grid.style.gap = "10px";
+    grid.style.marginTop = "20px";
 
-dayNames.forEach(name => {
-    const dayHeader = document.createElement("div");
-    dayHeader.innerText = name;
-    dayHeader.style.fontWeight = "bold";
-    dayHeader.style.textAlign = "center";
-    daysGrid.appendChild(dayHeader);
-});
-
-    const firstDay = new Date(year, monthIndex, 1).getDay();
-    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-
-    for (let i = 0; i < firstDay; i++) {
-        daysGrid.innerHTML += "<div></div>";
-    }
+    const daysInMonth = new Date(currentYear, monthIndex + 1, 0).getDate();
 
     for (let day = 1; day <= daysInMonth; day++) {
         const dayBox = document.createElement("div");
         dayBox.innerText = day;
-        dayBox.style.cursor = "pointer"; 
-        dayBox.onclick = function() {
-    document.getElementById("calendarGrid").style.display = "none";
-    document.getElementById("dayPanel").style.display = "block";
-};
         dayBox.style.padding = "15px";
-        dayBox.style.background = "#f8f9fa";
-        dayBox.style.borderRadius = "10px";
+        dayBox.style.background = "#f1f1f1";
+        dayBox.style.borderRadius = "8px";
         dayBox.style.textAlign = "center";
-        daysGrid.appendChild(dayBox);
+        dayBox.style.cursor = "pointer";
+
+        dayBox.onclick = function() {
+            openDayView(day, month, monthIndex);
+        };
+
+        grid.appendChild(dayBox);
     }
 
-    monthViewContainer.appendChild(daysGrid);
-}
-buildCalendar(currentYear);
-</script>
-</div>
-</div>
-
-</div>
-    <div class="jobs">
-        <h2>Jobs Today</h2>
-        <p>No jobs yet.</p>
-    </div>
-</div>
-
-<script>
-function openCalendar() {
-    document.getElementById("bookingsCalendar").style.display = "block";
+    monthView.appendChild(grid);
 }
 
-function closeCalendar() {
-    document.getElementById("bookingsCalendar").style.display = "none";
+function openDayView(day, month, monthIndex) {
+
+    monthView.innerHTML = "";
+    dayPanel.style.display = "block";
+
+    const date = new Date(currentYear, monthIndex, day);
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
+    document.getElementById("dayTitle").innerText =
+        date.toLocaleDateString('en-AU', options);
 }
-    function openDay(day) {
-    alert("Opening day " + day);
+
+function backToMonth() {
+    dayPanel.style.display = "none";
+    buildCalendar();
 }
+
+buildCalendar();
+
 </script>
 
 </body>
