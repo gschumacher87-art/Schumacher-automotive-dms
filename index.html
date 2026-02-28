@@ -6,8 +6,19 @@
 <title>Schumacher Automotive DMS</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
-body{display:flex;background:#f4f6f9;}
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    display:flex;
+    background:#f4f6f9;
+}
+
+/* SIDEBAR */
 
 .sidebar{
     width:220px;
@@ -16,13 +27,36 @@ body{display:flex;background:#f4f6f9;}
     min-height:100vh;
     padding:20px;
 }
-.sidebar h2{margin-bottom:30px;font-size:18px;}
-.sidebar ul{list-style:none;}
-.sidebar li{margin:18px 0;cursor:pointer;}
 
-.main{flex:1;padding:30px;}
+.sidebar h2{
+    margin-bottom:30px;
+    font-size:18px;
+}
 
-.cards{display:flex;gap:20px;margin-bottom:30px;}
+.sidebar ul{
+    list-style:none;
+}
+
+.sidebar li{
+    margin:18px 0;
+    cursor:pointer;
+}
+
+/* MAIN */
+
+.main{
+    flex:1;
+    padding:30px;
+}
+
+/* CARDS */
+
+.cards{
+    display:flex;
+    gap:20px;
+    margin-bottom:30px;
+}
+
 .card{
     background:white;
     padding:20px;
@@ -32,22 +66,109 @@ body{display:flex;background:#f4f6f9;}
     cursor:pointer;
 }
 
-button{cursor:pointer;border:none;padding:8px 14px;border-radius:8px;}
-.primary{background:#3b82f6;color:white;}
-.danger{background:#ff4d4d;color:white;}
+/* CALENDAR */
 
-table{width:100%;border-collapse:collapse;margin-top:15px;}
-th,td{padding:10px;border:1px solid #ddd;text-align:left;}
-th{background:#f1f1f1;}
+.calendar-wrapper{
+    display:none;
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
 
-.calendar-wrapper{display:none;background:white;padding:20px;border-radius:12px;}
-.month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-.month-box{background:#f8f9fa;padding:15px;border-radius:10px;cursor:pointer;}
-.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:20px;}
-.day-box{padding:15px;background:#f1f1f1;border-radius:8px;text-align:center;cursor:pointer;position:relative;}
-.day-count{position:absolute;top:5px;right:6px;background:#3b82f6;color:white;font-size:11px;padding:2px 6px;border-radius:12px;}
-.day-full{background:#ff4d4d;color:white;}
-.day-panel{display:none;margin-top:20px;}
+.month-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.month-box{
+    background:#f8f9fa;
+    padding:15px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.day-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+    margin-top:20px;
+}
+
+.day-box{
+    padding:15px;
+    background:#f1f1f1;
+    border-radius:8px;
+    text-align:center;
+    cursor:pointer;
+    position:relative;
+}
+
+.day-count{
+    position:absolute;
+    top:5px;
+    right:6px;
+    background:#3b82f6;
+    color:white;
+    font-size:11px;
+    padding:2px 6px;
+    border-radius:12px;
+}
+
+.day-full{
+    background:#ff4d4d;
+}
+
+.day-panel{
+    display:none;
+    margin-top:20px;
+}
+
+.day-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+button{
+    cursor:pointer;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+}
+
+.primary{
+    background:#3b82f6;
+    color:white;
+}
+
+.danger{
+    background:#ff4d4d;
+    color:white;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th,td{
+    padding:10px;
+    border:1px solid #ddd;
+    text-align:left;
+}
+
+th{
+    background:#f1f1f1;
+}
+
+.slots{
+    font-weight:bold;
+    margin-left:15px;
+}
 </style>
 </head>
 
@@ -58,69 +179,82 @@ th{background:#f1f1f1;}
     <ul>
         <li onclick="openDashboard()">Dashboard</li>
         <li onclick="openCustomers()">Customers</li>
-        <li onclick="openJobs()">Jobs</li>
+        <li>Jobs</li>
         <li onclick="openCalendar()">Calendar</li>
+        <li>Technicians</li>
     </ul>
 </div>
 
 <div class="main">
 
-<!-- DASHBOARD -->
+<!-- DASHBOARD SECTION -->
 <div id="dashboardSection">
     <h1>Dashboard</h1>
+
     <div class="cards">
-        <div class="card">
+        <div class="card" onclick="openCalendar()">
             <h3>Bookings Today</h3>
             <p id="bookingCount">0</p>
+        </div>
+        <div class="card">
+            <h3>Vehicles in Workshop</h3>
+            <p>0</p>
+        </div>
+        <div class="card">
+            <h3>Hours Booked Today</h3>
+            <p>0</p>
         </div>
     </div>
 </div>
 
-<!-- CUSTOMERS -->
+<!-- CUSTOMERS SECTION -->
 <div id="customersSection" style="display:none;">
     <h1>Customers</h1>
-    <button class="primary" onclick="addCustomer()">+ Add Customer</button>
+
+    <div style="margin-bottom:20px;">
+        <button class="primary" onclick="addCustomer()">+ Add Customer</button>
+    </div>
+
     <table>
         <thead>
-            <tr><th>Name</th><th>Phone</th><th>Email</th><th></th></tr>
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
         </thead>
         <tbody id="customerTableBody"></tbody>
     </table>
 </div>
 
-<!-- JOB TYPES DATABASE -->
-<div id="jobsSection" style="display:none;">
-    <h1>Job Types</h1>
-    <button class="primary" onclick="addJobType()">+ Add Job Type</button>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Job Name</th>
-                <th>Estimated Hours</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="jobTypeTable"></tbody>
-    </table>
-</div>
-
-<!-- CALENDAR -->
+<!-- CALENDAR SECTION -->
 <div id="calendarWrapper" class="calendar-wrapper">
-    <h2>
-        Bookings -
-        <button onclick="changeYear(-1)">&lt;&lt;</button>
-        <span id="yearDisplay"></span>
-        <button onclick="changeYear(1)">&gt;&gt;</button>
-    </h2>
+
+    <div class="day-header">
+        <h2>
+            Bookings -
+            <button onclick="changeYear(-1)">&lt;&lt;</button>
+            <span id="yearDisplay"></span>
+            <button onclick="changeYear(1)">&gt;&gt;</button>
+        </h2>
+        <button class="danger" onclick="closeCalendar()">✕ Close</button>
+    </div>
 
     <div id="calendarGrid" class="month-grid"></div>
     <div id="monthView"></div>
 
     <div id="dayPanel" class="day-panel">
-        <h2 id="dayTitle"></h2>
-        <button onclick="backToMonth()">← Back</button>
-        <button class="primary" onclick="addVehicle()">+ Add Booking</button>
+
+        <div class="day-header">
+            <h2>
+                <span id="dayTitle"></span>
+                <span id="slotCounter" class="slots"></span>
+            </h2>
+            <button onclick="backToMonth()">← Back</button>
+        </div>
+
+        <button class="primary" onclick="addVehicle()">+ Add Vehicle</button>
 
         <table>
             <thead>
@@ -129,12 +263,15 @@ th{background:#f1f1f1;}
                     <th>Customer</th>
                     <th>Job Type</th>
                     <th>Status</th>
+                    <th>Notes</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody id="jobTableBody"></tbody>
         </table>
+
     </div>
+
 </div>
 
 </div>
@@ -142,174 +279,257 @@ th{background:#f1f1f1;}
 <script>
 
 /* =====================
-   STORAGE
-===================== */
-
-let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
-let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
-let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
-
-function saveAll(){
-    localStorage.setItem("workshopCustomers", JSON.stringify(customers));
-    localStorage.setItem("workshopJobTypes", JSON.stringify(jobTypes));
-    localStorage.setItem("workshopJobs", JSON.stringify(jobs));
-}
-
-/* =====================
    SECTION SWITCHING
 ===================== */
 
-function hideAll(){
-    document.getElementById("dashboardSection").style.display="none";
+function openDashboard(){
+    document.getElementById("dashboardSection").style.display="block";
     document.getElementById("customersSection").style.display="none";
-    document.getElementById("jobsSection").style.display="none";
     document.getElementById("calendarWrapper").style.display="none";
 }
 
-function openDashboard(){hideAll();document.getElementById("dashboardSection").style.display="block";}
-function openCustomers(){hideAll();document.getElementById("customersSection").style.display="block";renderCustomers();}
-function openJobs(){hideAll();document.getElementById("jobsSection").style.display="block";renderJobTypes();}
-function openCalendar(){hideAll();document.getElementById("calendarWrapper").style.display="block";}
+function openCustomers(){
+    document.getElementById("dashboardSection").style.display="none";
+    document.getElementById("customersSection").style.display="block";
+    document.getElementById("calendarWrapper").style.display="none";
+    renderCustomers();
+}
+
+function openCalendar(){
+    document.getElementById("dashboardSection").style.display="none";
+    document.getElementById("customersSection").style.display="none";
+    document.getElementById("calendarWrapper").style.display="block";
+}
 
 /* =====================
    CUSTOMERS
 ===================== */
 
+let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
+
+function saveCustomers(){
+    localStorage.setItem("workshopCustomers", JSON.stringify(customers));
+}
+
 function addCustomer(){
-    const name=prompt("Customer Name:");
+
+    const name = prompt("Customer Name:");
     if(!name) return;
-    const phone=prompt("Phone:");
-    const email=prompt("Email:");
+
+    const phone = prompt("Phone:");
+    const email = prompt("Email:");
+
     customers.push({name,phone,email});
-    saveAll();
+    saveCustomers();
+    renderCustomers();
+}
+
+function deleteCustomer(index){
+    customers.splice(index,1);
+    saveCustomers();
     renderCustomers();
 }
 
 function renderCustomers(){
-    const table=document.getElementById("customerTableBody");
+
+    const table = document.getElementById("customerTableBody");
     table.innerHTML="";
-    customers.forEach((c,i)=>{
-        table.innerHTML+=`
-            <tr>
-                <td>${c.name}</td>
-                <td>${c.phone||""}</td>
-                <td>${c.email||""}</td>
-                <td><button onclick="deleteCustomer(${i})">✕</button></td>
-            </tr>`;
+
+    customers.forEach((customer,i)=>{
+        const row=document.createElement("tr");
+        row.innerHTML=`
+            <td>${customer.name}</td>
+            <td>${customer.phone||""}</td>
+            <td>${customer.email||""}</td>
+            <td><button onclick="deleteCustomer(${i})">✕</button></td>
+        `;
+        table.appendChild(row);
     });
 }
 
-function deleteCustomer(i){customers.splice(i,1);saveAll();renderCustomers();}
-
 /* =====================
-   JOB TYPES DATABASE
+   CALENDAR (UNCHANGED LOGIC)
 ===================== */
 
-function addJobType(){
-    const name=prompt("Job Name (e.g. Service, Brakes):");
-    if(!name) return;
-    const hours=prompt("Estimated Hours:");
-    jobTypes.push({name,hours});
-    saveAll();
-    renderJobTypes();
+let currentYear = new Date().getFullYear();
+let selectedDateKey = null;
+let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
+const MAX_BOOKINGS_PER_DAY = 10;
+
+const calendarGrid = document.getElementById("calendarGrid");
+const monthView = document.getElementById("monthView");
+const dayPanel = document.getElementById("dayPanel");
+const jobTableBody = document.getElementById("jobTableBody");
+
+function saveJobs(){
+    localStorage.setItem("workshopJobs", JSON.stringify(jobs));
 }
 
-function renderJobTypes(){
-    const table=document.getElementById("jobTypeTable");
-    table.innerHTML="";
-    jobTypes.forEach((j,i)=>{
-        table.innerHTML+=`
-            <tr>
-                <td>${j.name}</td>
-                <td>${j.hours||""}</td>
-                <td><button onclick="deleteJobType(${i})">✕</button></td>
-            </tr>`;
-    });
+function closeCalendar(){
+    openDashboard();
 }
 
-function deleteJobType(i){jobTypes.splice(i,1);saveAll();renderJobTypes();}
-
-/* =====================
-   CALENDAR
-===================== */
-
-let currentYear=new Date().getFullYear();
-let selectedDateKey=null;
-
-function changeYear(dir){currentYear+=dir;buildCalendar();}
+function changeYear(dir){
+    currentYear += dir;
+    buildCalendar();
+}
 
 function buildCalendar(){
+
     document.getElementById("yearDisplay").innerText=currentYear;
-    const grid=document.getElementById("calendarGrid");
-    grid.innerHTML="";
-    const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
-    months.forEach((m,i)=>{
-        grid.innerHTML+=`<div class="month-box" onclick="showMonth(${i})">${m}</div>`;
+    calendarGrid.innerHTML="";
+    monthView.innerHTML="";
+    dayPanel.style.display="none";
+    calendarGrid.style.display="grid";
+
+    const months=["January","February","March","April","May","June",
+                  "July","August","September","October","November","December"];
+
+    months.forEach((month,index)=>{
+        const box=document.createElement("div");
+        box.className="month-box";
+        box.innerHTML=`<h3>${month}</h3>`;
+        box.onclick=()=>showMonth(month,index);
+        calendarGrid.appendChild(box);
     });
+
+    updateDashboardToday();
 }
 
-function showMonth(monthIndex){
+function showMonth(month,monthIndex){
+
+    calendarGrid.style.display="none";
+    monthView.innerHTML="";
+    dayPanel.style.display="none";
+
+    const back=document.createElement("button");
+    back.innerText="← Back to Year";
+    back.onclick=buildCalendar;
+
+    const title=document.createElement("h2");
+    title.innerText=month+" "+currentYear;
+
+    const grid=document.createElement("div");
+    grid.className="day-grid";
+
     const days=new Date(currentYear,monthIndex+1,0).getDate();
-    const view=document.getElementById("monthView");
-    view.innerHTML="";
+
     for(let d=1;d<=days;d++){
-        view.innerHTML+=`<div class="day-box" onclick="openDay(${monthIndex},${d})">${d}</div>`;
+
+        const key=`${currentYear}-${monthIndex}-${d}`;
+        const count = jobs[key] ? jobs[key].length : 0;
+
+        const dayBox=document.createElement("div");
+        dayBox.className="day-box";
+        if(count >= MAX_BOOKINGS_PER_DAY){
+            dayBox.classList.add("day-full");
+        }
+
+        dayBox.innerHTML=`
+            ${d}
+            ${count>0 ? `<div class="day-count">${count}</div>` : ""}
+        `;
+
+        dayBox.onclick=()=>openDayView(d,monthIndex);
+        grid.appendChild(dayBox);
+    }
+
+    monthView.appendChild(back);
+    monthView.appendChild(title);
+    monthView.appendChild(grid);
+}
+
+function openDayView(day,monthIndex){
+
+    monthView.innerHTML="";
+    dayPanel.style.display="block";
+
+    selectedDateKey=`${currentYear}-${monthIndex}-${day}`;
+
+    const date=new Date(currentYear,monthIndex,day);
+    document.getElementById("dayTitle").innerText=
+        date.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+
+    if(!jobs[selectedDateKey]){
+        jobs[selectedDateKey]=[];
+    }
+
+    renderJobs();
+    updateSlotCounter();
+}
+
+function updateSlotCounter(){
+    const count = jobs[selectedDateKey].length;
+    const remaining = MAX_BOOKINGS_PER_DAY - count;
+
+    if(remaining <= 0){
+        document.getElementById("slotCounter").innerText=" - DAY FULL";
+    } else {
+        document.getElementById("slotCounter").innerText=
+            ` - ${remaining} Slots Available`;
     }
 }
 
-function openDay(monthIndex,day){
-    selectedDateKey=`${currentYear}-${monthIndex}-${day}`;
-    if(!jobs[selectedDateKey]) jobs[selectedDateKey]=[];
-    document.getElementById("dayPanel").style.display="block";
-    document.getElementById("dayTitle").innerText=`${day}/${monthIndex+1}/${currentYear}`;
-    renderBookings();
+function updateDashboardToday(){
+
+    const today=new Date();
+    const key=`${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    const count = jobs[key] ? jobs[key].length : 0;
+    document.getElementById("bookingCount").innerText=count;
 }
 
 function addVehicle(){
-    const rego=prompt("Rego:");
-    const customer=prompt("Customer:");
 
-    if(jobTypes.length===0){
-        alert("Add Job Types first in Jobs section.");
+    if(!selectedDateKey) return;
+
+    if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
+        alert("Day is fully booked");
         return;
     }
 
-    let list="Select Job:\n";
-    jobTypes.forEach((j,i)=>{list+=`${i+1}. ${j.name}\n`;});
-    const choice=prompt(list);
-    const jobType=jobTypes[choice-1]?.name || "";
+    const rego=prompt("Rego:");
+    if(!rego) return;
 
+    const customer=prompt("Customer:");
+    const type=prompt("Job Type:");
     const status=prompt("Status:");
+    const notes=prompt("Notes:");
 
-    jobs[selectedDateKey].push({rego,customer,jobType,status});
-    saveAll();
-    renderBookings();
+    jobs[selectedDateKey].push({rego,customer,type,status,notes});
+    saveJobs();
+    renderJobs();
+    updateSlotCounter();
 }
 
-function renderBookings(){
-    const table=document.getElementById("jobTableBody");
-    table.innerHTML="";
-    jobs[selectedDateKey].forEach((j,i)=>{
-        table.innerHTML+=`
-            <tr>
-                <td>${j.rego}</td>
-                <td>${j.customer}</td>
-                <td>${j.jobType}</td>
-                <td>${j.status||""}</td>
-                <td><button onclick="deleteBooking(${i})">✕</button></td>
-            </tr>`;
+function deleteJob(index){
+    jobs[selectedDateKey].splice(index,1);
+    saveJobs();
+    renderJobs();
+    updateSlotCounter();
+}
+
+function renderJobs(){
+
+    jobTableBody.innerHTML="";
+
+    jobs[selectedDateKey].forEach((job,i)=>{
+        const row=document.createElement("tr");
+        row.innerHTML=`
+            <td>${job.rego}</td>
+            <td>${job.customer||""}</td>
+            <td>${job.type||""}</td>
+            <td>${job.status||""}</td>
+            <td>${job.notes||""}</td>
+            <td><button onclick="deleteJob(${i})">✕</button></td>
+        `;
+        jobTableBody.appendChild(row);
     });
-}
-
-function deleteBooking(i){
-    jobs[selectedDateKey].splice(i,1);
-    saveAll();
-    renderBookings();
 }
 
 buildCalendar();
 openDashboard();
 
 </script>
+
 </body>
 </html>
