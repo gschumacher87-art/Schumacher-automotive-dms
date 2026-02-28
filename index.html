@@ -100,6 +100,22 @@ body{
     border-radius:8px;
     text-align:center;
     cursor:pointer;
+    position:relative;
+}
+
+.day-count{
+    position:absolute;
+    top:5px;
+    right:6px;
+    background:#3b82f6;
+    color:white;
+    font-size:11px;
+    padding:2px 6px;
+    border-radius:12px;
+}
+
+.day-full{
+    background:#ff4d4d;
 }
 
 .day-panel{
@@ -146,6 +162,11 @@ th,td{
 th{
     background:#f1f1f1;
 }
+
+.slots{
+    font-weight:bold;
+    margin-left:15px;
+}
 </style>
 </head>
 
@@ -168,7 +189,7 @@ th{
 
 <div class="cards">
     <div class="card" onclick="openCalendar()">
-        <h3>Bookings</h3>
+        <h3>Bookings Today</h3>
         <p id="bookingCount">0</p>
     </div>
     <div class="card">
@@ -199,7 +220,10 @@ th{
     <div id="dayPanel" class="day-panel">
 
         <div class="day-header">
-            <h2 id="dayTitle"></h2>
+            <h2>
+                <span id="dayTitle"></span>
+                <span id="slotCounter" class="slots"></span>
+            </h2>
             <button onclick="backToMonth()">← Back</button>
         </div>
 
@@ -230,6 +254,8 @@ th{
 let currentYear = new Date().getFullYear();
 let selectedDateKey = null;
 let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
+
+const MAX_BOOKINGS_PER_DAY = 10;
 
 const calendarGrid = document.getElementById("calendarGrid");
 const monthView = document.getElementById("monthView");
@@ -271,6 +297,8 @@ function buildCalendar(){
         box.onclick=()=>showMonth(month,index);
         calendarGrid.appendChild(box);
     });
+
+    updateDashboardToday();
 }
 
 function showMonth(month,monthIndex){
@@ -292,9 +320,21 @@ function showMonth(month,monthIndex){
     const days=new Date(currentYear,monthIndex+1,0).getDate();
 
     for(let d=1;d<=days;d++){
+
+        const key=`${currentYear}-${monthIndex}-${d}`;
+        const count = jobs[key] ? jobs[key].length : 0;
+
         const dayBox=document.createElement("div");
         dayBox.className="day-box";
-        dayBox.innerText=d;
+        if(count >= MAX_BOOKINGS_PER_DAY){
+            dayBox.classList.add("day-full");
+        }
+
+        dayBox.innerHTML=`
+            ${d}
+            ${count>0 ? `<div class="day-count">${count}</div>` : ""}
+        `;
+
         dayBox.onclick=()=>openDayView(d,monthIndex);
         grid.appendChild(dayBox);
     }
@@ -320,29 +360,37 @@ function openDayView(day,monthIndex){
     }
 
     renderJobs();
-    updateBookingsCard();
+    updateSlotCounter();
 }
 
-function backToMonth(){
-    buildCalendar();
-}
+function updateSlotCounter(){
+    const count = jobs[selectedDateKey].length;
+    const remaining = MAX_BOOKINGS_PER_DAY - count;
 
-function updateBookingsCard(){
-    if(!selectedDateKey){
-        document.getElementById("bookingCount").innerText=0;
-        return;
+    if(remaining <= 0){
+        document.getElementById("slotCounter").innerText=" - DAY FULL";
+    } else {
+        document.getElementById("slotCounter").innerText=
+            ` - ${remaining} Slots Available`;
     }
+}
 
-    const count = jobs[selectedDateKey]
-        ? jobs[selectedDateKey].length
-        : 0;
+function updateDashboardToday(){
 
+    const today=new Date();
+    const key=`${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    const count = jobs[key] ? jobs[key].length : 0;
     document.getElementById("bookingCount").innerText=count;
 }
 
 function addVehicle(){
 
     if(!selectedDateKey) return;
+
+    if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
+        alert("Day is fully booked");
+        return;
+    }
 
     const rego=prompt("Rego:");
     if(!rego) return;
@@ -355,14 +403,14 @@ function addVehicle(){
     jobs[selectedDateKey].push({rego,customer,type,status,notes});
     saveJobs();
     renderJobs();
-    updateBookingsCard();
+    updateSlotCounter();
 }
 
 function deleteJob(index){
     jobs[selectedDateKey].splice(index,1);
     saveJobs();
     renderJobs();
-    updateBookingsCard();
+    updateSlotCounter();
 }
 
 function renderJobs(){
