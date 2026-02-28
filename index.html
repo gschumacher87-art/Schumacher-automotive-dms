@@ -49,6 +49,8 @@ body{
     padding:30px;
 }
 
+/* CARDS */
+
 .cards{
     display:flex;
     gap:20px;
@@ -175,33 +177,58 @@ th{
 <div class="sidebar">
     <h2>Schumacher Automotive</h2>
     <ul>
-        <li>Dashboard</li>
-        <li>Customers</li>
+        <li onclick="openDashboard()">Dashboard</li>
+        <li onclick="openCustomers()">Customers</li>
         <li>Jobs</li>
-        <li>Calendar</li>
+        <li onclick="openCalendar()">Calendar</li>
         <li>Technicians</li>
     </ul>
 </div>
 
 <div class="main">
 
-<h1>Dashboard</h1>
+<!-- DASHBOARD SECTION -->
+<div id="dashboardSection">
+    <h1>Dashboard</h1>
 
-<div class="cards">
-    <div class="card" onclick="openCalendar()">
-        <h3>Bookings Today</h3>
-        <p id="bookingCount">0</p>
-    </div>
-    <div class="card">
-        <h3>Vehicles in Workshop</h3>
-        <p>0</p>
-    </div>
-    <div class="card">
-        <h3>Hours Booked Today</h3>
-        <p>0</p>
+    <div class="cards">
+        <div class="card" onclick="openCalendar()">
+            <h3>Bookings Today</h3>
+            <p id="bookingCount">0</p>
+        </div>
+        <div class="card">
+            <h3>Vehicles in Workshop</h3>
+            <p>0</p>
+        </div>
+        <div class="card">
+            <h3>Hours Booked Today</h3>
+            <p>0</p>
+        </div>
     </div>
 </div>
 
+<!-- CUSTOMERS SECTION -->
+<div id="customersSection" style="display:none;">
+    <h1>Customers</h1>
+
+    <div style="margin-bottom:20px;">
+        <button class="primary" onclick="addCustomer()">+ Add Customer</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="customerTableBody"></tbody>
+    </table>
+</div>
+
+<!-- CALENDAR SECTION -->
 <div id="calendarWrapper" class="calendar-wrapper">
 
     <div class="day-header">
@@ -251,10 +278,82 @@ th{
 
 <script>
 
+/* =====================
+   SECTION SWITCHING
+===================== */
+
+function openDashboard(){
+    document.getElementById("dashboardSection").style.display="block";
+    document.getElementById("customersSection").style.display="none";
+    document.getElementById("calendarWrapper").style.display="none";
+}
+
+function openCustomers(){
+    document.getElementById("dashboardSection").style.display="none";
+    document.getElementById("customersSection").style.display="block";
+    document.getElementById("calendarWrapper").style.display="none";
+    renderCustomers();
+}
+
+function openCalendar(){
+    document.getElementById("dashboardSection").style.display="none";
+    document.getElementById("customersSection").style.display="none";
+    document.getElementById("calendarWrapper").style.display="block";
+}
+
+/* =====================
+   CUSTOMERS
+===================== */
+
+let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
+
+function saveCustomers(){
+    localStorage.setItem("workshopCustomers", JSON.stringify(customers));
+}
+
+function addCustomer(){
+
+    const name = prompt("Customer Name:");
+    if(!name) return;
+
+    const phone = prompt("Phone:");
+    const email = prompt("Email:");
+
+    customers.push({name,phone,email});
+    saveCustomers();
+    renderCustomers();
+}
+
+function deleteCustomer(index){
+    customers.splice(index,1);
+    saveCustomers();
+    renderCustomers();
+}
+
+function renderCustomers(){
+
+    const table = document.getElementById("customerTableBody");
+    table.innerHTML="";
+
+    customers.forEach((customer,i)=>{
+        const row=document.createElement("tr");
+        row.innerHTML=`
+            <td>${customer.name}</td>
+            <td>${customer.phone||""}</td>
+            <td>${customer.email||""}</td>
+            <td><button onclick="deleteCustomer(${i})">✕</button></td>
+        `;
+        table.appendChild(row);
+    });
+}
+
+/* =====================
+   CALENDAR (UNCHANGED LOGIC)
+===================== */
+
 let currentYear = new Date().getFullYear();
 let selectedDateKey = null;
 let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
-
 const MAX_BOOKINGS_PER_DAY = 10;
 
 const calendarGrid = document.getElementById("calendarGrid");
@@ -266,12 +365,8 @@ function saveJobs(){
     localStorage.setItem("workshopJobs", JSON.stringify(jobs));
 }
 
-function openCalendar(){
-    document.getElementById("calendarWrapper").style.display="block";
-}
-
 function closeCalendar(){
-    document.getElementById("calendarWrapper").style.display="none";
+    openDashboard();
 }
 
 function changeYear(dir){
@@ -432,6 +527,7 @@ function renderJobs(){
 }
 
 buildCalendar();
+openDashboard();
 
 </script>
 
