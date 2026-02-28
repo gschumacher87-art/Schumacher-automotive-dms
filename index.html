@@ -221,7 +221,14 @@ function changeYear(direction) {
     buildCalendar(currentYear);
 }
 function showMonthView(month, year, monthIndex) {
+    
     monthViewContainer.innerHTML = "";
+
+    monthViewContainer.style.display = "block";
+    monthViewContainer.style.marginTop = "30px";
+    monthViewContainer.style.padding = "20px";
+    monthViewContainer.style.background = "#f8f9fa";
+    monthViewContainer.style.borderRadius = "12px";
 
     
 
