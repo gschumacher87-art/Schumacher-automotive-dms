@@ -192,7 +192,10 @@ monthDiv.onclick = function() {
         }
 
         for (let day = 1; day <= daysInMonth; day++) {
-            daysHTML += `<div style="padding:6px; background:white; border-radius:4px; text-align:center; cursor:pointer;">${day}</div>`;
+            daysHTML += <div style="padding:6px; background:white; border-radius:4px; text-align:center; cursor:pointer;"
+onclick="window.location.href='day.html'">
+${day}
+</div>`;
         }
 
         monthDiv.innerHTML = `
