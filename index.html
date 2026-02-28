@@ -147,6 +147,11 @@ body {
 
     <div id="calendarGrid"></div>
 
+     <div id="dayPanel" style="display: none;">
+    <h2>Day Booking View</h2>
+    <p>This will become your Tuesday 3rd March layout.</p>
+</div>
+
 <script> 
     
 const calendarContainer = document.getElementById("calendarGrid");
@@ -257,7 +262,8 @@ dayNames.forEach(name => {
         dayBox.innerText = day;
         dayBox.style.cursor = "pointer"; 
         dayBox.onclick = function() {
-    openDay(day);
+    document.getElementById("calendarGrid").style.display = "none";
+    document.getElementById("dayPanel").style.display = "block";
 };
         dayBox.style.padding = "15px";
         dayBox.style.background = "#f8f9fa";
