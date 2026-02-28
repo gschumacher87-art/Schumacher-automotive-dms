@@ -220,16 +220,9 @@ function changeYear(direction) {
 }
 function showMonthView(month, year, monthIndex) {
 
-    calendarContainer.innerHTML = "";
+    
 
-    const backBtn = document.createElement("button");
-    backBtn.innerText = "← Back";
-    backBtn.style.marginBottom = "20px";
-    backBtn.onclick = function () {
-        buildCalendar(year);
-    };
-
-    calendarContainer.appendChild(backBtn);
+    
 
     const title = document.createElement("h2");
     title.innerText = month + " " + year;
