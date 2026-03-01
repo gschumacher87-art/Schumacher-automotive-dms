@@ -7,7 +7,41 @@ let selectedDateKey = null;
 let currentMonthIndex = null;
 
 let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
+
+/* 
+NEW STRUCTURE:
+Job Template Object:
+
+{
+    id: number,
+    name: string,
+    description: string,
+    defaultHours: number,
+    parts: [
+        {
+            partName: string,
+            quantity: number
+        }
+    ]
+}
+*/
 let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
+
+/*
+Booking Job Object:
+
+{
+    id: number,
+    rego: string,
+    customer: string,
+    templateId: number|null,
+    type: string,
+    hours: number,
+    parts: [],
+    status: string,
+    notes: string
+}
+*/
 let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
 
 const MAX_BOOKINGS_PER_DAY = 10;
@@ -105,7 +139,7 @@ function renderCustomers(){
 
 
 /* =================================
-   JOB TYPES
+   JOB TYPES (UPGRADED STRUCTURE)
 ================================= */
 
 function addJobType(){
@@ -114,8 +148,32 @@ function addJobType(){
     if(!name) return;
 
     const description = prompt("Description:");
+    const defaultHoursInput = prompt("Default Labour Hours (e.g. 2.5):");
+    const defaultHours = parseFloat(defaultHoursInput) || 0;
 
-    jobTypes.push({name,description});
+    let parts = [];
+
+    while(true){
+        const partName = prompt("Add Part Name (Cancel to stop):");
+        if(!partName) break;
+
+        const qtyInput = prompt("Quantity:");
+        const quantity = parseFloat(qtyInput) || 1;
+
+        parts.push({
+            partName,
+            quantity
+        });
+    }
+
+    jobTypes.push({
+        id: Date.now(),
+        name,
+        description,
+        defaultHours,
+        parts
+    });
+
     saveJobTypes();
     renderJobTypes();
 }
@@ -135,11 +193,15 @@ function renderJobTypes(){
 
     jobTypes.forEach((j,i)=>{
         const row = document.createElement("tr");
+
         row.innerHTML = `
             <td>${j.name}</td>
             <td>${j.description || ""}</td>
+            <td>${j.defaultHours || 0} hrs</td>
+            <td>${j.parts ? j.parts.length : 0} parts</td>
             <td><button onclick="deleteJobType(${i})">✕</button></td>
         `;
+
         table.appendChild(row);
     });
 }
@@ -281,7 +343,7 @@ function updateDashboardToday(){
 
 
 /* =================================
-   JOBS TABLE
+   JOBS TABLE (UPGRADED BOOKINGS)
 ================================= */
 
 function addVehicle(){
@@ -300,20 +362,51 @@ function addVehicle(){
     const status = prompt("Status:");
     const notes = prompt("Notes:");
 
+    let templateId = null;
     let type = "";
+    let hours = 0;
+    let parts = [];
 
     if(jobTypes.length > 0){
+
         let list = "Select Job Type:\n";
+
         jobTypes.forEach((j,i)=>{
             list += `${i+1}. ${j.name}\n`;
         });
+
         const choice = prompt(list);
+
         if(choice && jobTypes[choice-1]){
-            type = jobTypes[choice-1].name;
+
+            const template = jobTypes[choice-1];
+
+            templateId = template.id;
+            type = template.name;
+
+            hours = template.defaultHours || 0;
+
+            parts = JSON.parse(JSON.stringify(template.parts || []));
+
+            const adjustHours = prompt(`Adjust Labour Hours (Default ${hours}):`);
+            if(adjustHours !== null){
+                hours = parseFloat(adjustHours) || hours;
+            }
         }
     }
 
-    jobs[selectedDateKey].push({rego,customer,type,status,notes});
+    jobs[selectedDateKey].push({
+        id: Date.now(),
+        rego,
+        customer,
+        templateId,
+        type,
+        hours,
+        parts,
+        status,
+        notes
+    });
+
     saveJobs();
     renderJobs();
     updateSlotCounter();
@@ -350,6 +443,7 @@ function renderJobs(){
                 <td>${job.rego}</td>
                 <td>${job.customer || ""}</td>
                 <td>${job.type || ""}</td>
+                <td>${job.hours || 0} hrs</td>
                 <td>${job.status || ""}</td>
                 <td>${job.notes || ""}</td>
                 <td><button onclick="deleteJob(${i})">✕</button></td>
@@ -360,6 +454,7 @@ function renderJobs(){
             row.innerHTML = `
                 <td>${i+1}</td>
                 <td style="opacity:0.3;">Empty</td>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
