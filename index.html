@@ -102,9 +102,11 @@
 
         <div class="day-header">
             <h2>
-                <span id="dayTitle"></span>
-                <span id="slotCounter" class="slots"></span>
-            </h2>
+    <button onclick="changeDay(-1)">&lt;&lt;</button>
+    <span id="dayTitle"></span>
+    <button onclick="changeDay(1)">&gt;&gt;</button>
+    <span id="slotCounter" class="slots"></span>
+</h2>
             <button onclick="backToMonth()">← Back</button>
         </div>
 
