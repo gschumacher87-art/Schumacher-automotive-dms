@@ -1,3 +1,6 @@
+window.onerror = function(message) {
+    alert("JS ERROR: " + message);
+};
 alert("app.js is loading");
 /* =====================
    SECTION SWITCHING
