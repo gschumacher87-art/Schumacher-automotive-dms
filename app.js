@@ -327,7 +327,6 @@ document.addEventListener("DOMContentLoaded", function(){
     buildCalendar();
     openDashboard();
 });
-});
     
 // =======================
 // DAY CYCLING
