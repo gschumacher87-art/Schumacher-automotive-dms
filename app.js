@@ -1,3 +1,4 @@
+alert("NEW JS LOADED");
 /* =====================
    SECTION SWITCHING
 ===================== */
