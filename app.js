@@ -4,6 +4,7 @@
 
 let currentYear = new Date().getFullYear();
 let selectedDateKey = null;
+let currentMonthIndex = null;
 
 let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
 let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
@@ -14,12 +15,10 @@ const MAX_BOOKINGS_PER_DAY = 10;
 let calendarGrid;
 let monthView;
 let dayPanel;
-let jobTableBody;
-let currentMonthIndex = null;
 
 
 /* =================================
-   STORAGE HELPERS
+   STORAGE
 ================================= */
 
 function saveCustomers(){
@@ -40,6 +39,7 @@ function saveJobs(){
 ================================= */
 
 function showSection(sectionId){
+
     const sections = [
         "dashboardSection",
         "customersSection",
@@ -47,7 +47,7 @@ function showSection(sectionId){
         "calendarWrapper"
     ];
 
-    sections.forEach(id => {
+    sections.forEach(id=>{
         const el = document.getElementById(id);
         if(el){
             el.style.display = (id === sectionId) ? "block" : "none";
@@ -55,23 +55,10 @@ function showSection(sectionId){
     });
 }
 
-function openDashboard(){
-    showSection("dashboardSection");
-}
-
-function openCustomers(){
-    showSection("customersSection");
-    renderCustomers();
-}
-
-function openJobs(){
-    showSection("jobsSection");
-    renderJobTypes();
-}
-
-function openCalendar(){
-    showSection("calendarWrapper");
-}
+function openDashboard(){ showSection("dashboardSection"); }
+function openCustomers(){ showSection("customersSection"); renderCustomers(); }
+function openJobs(){ showSection("jobsSection"); renderJobTypes(); }
+function openCalendar(){ showSection("calendarWrapper"); }
 
 
 /* =================================
@@ -79,13 +66,14 @@ function openCalendar(){
 ================================= */
 
 function addCustomer(){
+
     const name = prompt("Customer Name:");
     if(!name) return;
 
     const phone = prompt("Phone:");
     const email = prompt("Email:");
 
-    customers.push({name, phone, email});
+    customers.push({name,phone,email});
     saveCustomers();
     renderCustomers();
 }
@@ -97,17 +85,18 @@ function deleteCustomer(index){
 }
 
 function renderCustomers(){
+
     const table = document.getElementById("customerTableBody");
     if(!table) return;
 
     table.innerHTML = "";
 
-    customers.forEach((customer,i)=>{
+    customers.forEach((c,i)=>{
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${customer.name}</td>
-            <td>${customer.phone || ""}</td>
-            <td>${customer.email || ""}</td>
+            <td>${c.name}</td>
+            <td>${c.phone || ""}</td>
+            <td>${c.email || ""}</td>
             <td><button onclick="deleteCustomer(${i})">✕</button></td>
         `;
         table.appendChild(row);
@@ -120,12 +109,13 @@ function renderCustomers(){
 ================================= */
 
 function addJobType(){
+
     const name = prompt("Service Name:");
     if(!name) return;
 
     const description = prompt("Description:");
 
-    jobTypes.push({name, description});
+    jobTypes.push({name,description});
     saveJobTypes();
     renderJobTypes();
 }
@@ -137,16 +127,17 @@ function deleteJobType(index){
 }
 
 function renderJobTypes(){
+
     const table = document.getElementById("jobTypesTableBody");
     if(!table) return;
 
     table.innerHTML = "";
 
-    jobTypes.forEach((job,i)=>{
+    jobTypes.forEach((j,i)=>{
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${job.name}</td>
-            <td>${job.description || ""}</td>
+            <td>${j.name}</td>
+            <td>${j.description || ""}</td>
             <td><button onclick="deleteJobType(${i})">✕</button></td>
         `;
         table.appendChild(row);
@@ -169,6 +160,7 @@ function buildCalendar(){
     currentMonthIndex = null;
 
     document.getElementById("yearDisplay").innerText = currentYear;
+
     calendarGrid.innerHTML = "";
     monthView.innerHTML = "";
     dayPanel.style.display = "none";
@@ -183,7 +175,7 @@ function buildCalendar(){
         const box = document.createElement("div");
         box.className = "month-box";
         box.innerHTML = `<h3>${month}</h3>`;
-        box.onclick = () => showMonth(index);
+        box.onclick = ()=> showMonth(index);
         calendarGrid.appendChild(box);
     });
 
@@ -203,9 +195,8 @@ function showMonth(monthIndex){
     back.onclick = buildCalendar;
 
     const title = document.createElement("h2");
-    title.innerText =
-        new Date(currentYear,monthIndex)
-        .toLocaleDateString('en-AU',{month:'long', year:'numeric'});
+    title.innerText = new Date(currentYear,monthIndex)
+        .toLocaleDateString('en-AU',{month:'long',year:'numeric'});
 
     const grid = document.createElement("div");
     grid.className = "day-grid";
@@ -226,10 +217,10 @@ function showMonth(monthIndex){
 
         dayBox.innerHTML = `
             ${d}
-            ${count > 0 ? `<div class="day-count">${count}</div>` : ""}
+            ${count>0 ? `<div class="day-count">${count}</div>` : ""}
         `;
 
-        dayBox.onclick = () => openDayView(d);
+        dayBox.onclick = ()=> openDayView(d);
         grid.appendChild(dayBox);
     }
 
@@ -266,6 +257,7 @@ function openDayView(day){
 }
 
 function updateSlotCounter(){
+
     if(!selectedDateKey) return;
 
     const count = jobs[selectedDateKey].length;
@@ -278,6 +270,7 @@ function updateSlotCounter(){
 }
 
 function updateDashboardToday(){
+
     const today = new Date();
     const key = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
     const count = jobs[key] ? jobs[key].length : 0;
@@ -288,7 +281,7 @@ function updateDashboardToday(){
 
 
 /* =================================
-   JOBS — SPREADSHEET STYLE
+   JOBS TABLE
 ================================= */
 
 function addVehicle(){
@@ -314,7 +307,6 @@ function addVehicle(){
         jobTypes.forEach((j,i)=>{
             list += `${i+1}. ${j.name}\n`;
         });
-
         const choice = prompt(list);
         if(choice && jobTypes[choice-1]){
             type = jobTypes[choice-1].name;
@@ -336,13 +328,16 @@ function deleteJob(index){
 
 function renderJobs(){
 
-    if(!jobTableBody || !selectedDateKey) return;
+    if(!selectedDateKey) return;
 
-    jobTableBody.innerHTML = "";
+    const tableBody = document.getElementById("bookingsBody");
+    if(!tableBody) return;
+
+    tableBody.innerHTML = "";
 
     const dayJobs = jobs[selectedDateKey] || [];
 
-    for(let i = 0; i < MAX_BOOKINGS_PER_DAY; i++){
+    for(let i=0;i<MAX_BOOKINGS_PER_DAY;i++){
 
         const row = document.createElement("tr");
 
@@ -351,6 +346,7 @@ function renderJobs(){
             const job = dayJobs[i];
 
             row.innerHTML = `
+                <td>${i+1}</td>
                 <td>${job.rego}</td>
                 <td>${job.customer || ""}</td>
                 <td>${job.type || ""}</td>
@@ -362,6 +358,7 @@ function renderJobs(){
         } else {
 
             row.innerHTML = `
+                <td>${i+1}</td>
                 <td style="opacity:0.3;">Empty</td>
                 <td></td>
                 <td></td>
@@ -369,9 +366,12 @@ function renderJobs(){
                 <td></td>
                 <td></td>
             `;
+
+            row.style.cursor = "pointer";
+            row.onclick = ()=> addVehicle();
         }
 
-        jobTableBody.appendChild(row);
+        tableBody.appendChild(row);
     }
 }
 
@@ -383,35 +383,14 @@ function backToMonth(){
 
 
 /* =================================
-   DAY CYCLING
-================================= */
-
-function changeDay(direction){
-
-    if(!selectedDateKey) return;
-
-    const [year,month,day] = selectedDateKey.split("-").map(Number);
-    const date = new Date(year,month,day);
-
-    date.setDate(date.getDate() + direction);
-
-    currentYear = date.getFullYear();
-    currentMonthIndex = date.getMonth();
-
-    openDayView(date.getDate());
-}
-
-
-/* =================================
    INIT
 ================================= */
 
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded",function(){
 
     calendarGrid = document.getElementById("calendarGrid");
     monthView = document.getElementById("monthView");
     dayPanel = document.getElementById("dayPanel");
-    jobTableBody = document.getElementById("jobTableBody");
 
     buildCalendar();
     openDashboard();
