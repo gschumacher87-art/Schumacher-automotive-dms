@@ -1,48 +1,82 @@
+/* =================================
+   GLOBAL STATE
+================================= */
+
+let currentYear = new Date().getFullYear();
 let selectedDateKey = null;
-console.log("JS LOADED");
-/* =====================
-   SECTION SWITCHING
-===================== */
-
-function openDashboard(){
-    document.getElementById("dashboardSection").style.display="block";
-    document.getElementById("customersSection").style.display="none";
-    document.getElementById("jobsSection").style.display="none";
-    document.getElementById("calendarWrapper").style.display="none";
-}
-
-function openCustomers(){
-    document.getElementById("dashboardSection").style.display="none";
-    document.getElementById("customersSection").style.display="block";
-    document.getElementById("jobsSection").style.display="none";
-    document.getElementById("calendarWrapper").style.display="none";
-    renderCustomers();
-}
-
-function openJobs(){
-    document.getElementById("dashboardSection").style.display="none";
-    document.getElementById("customersSection").style.display="none";
-    document.getElementById("jobsSection").style.display="block";
-    document.getElementById("calendarWrapper").style.display="none";
-    renderJobTypes();
-}
-
-function openCalendar(){
-    document.getElementById("dashboardSection").style.display="none";
-    document.getElementById("customersSection").style.display="none";
-    document.getElementById("jobsSection").style.display="none";
-    document.getElementById("calendarWrapper").style.display="block";
-}
-
-/* =====================
-   CUSTOMERS
-===================== */
 
 let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
+let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
+let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
+
+const MAX_BOOKINGS_PER_DAY = 10;
+
+let calendarGrid;
+let monthView;
+let dayPanel;
+let jobTableBody;
+let currentMonthIndex = null;
+
+
+/* =================================
+   STORAGE HELPERS
+================================= */
 
 function saveCustomers(){
     localStorage.setItem("workshopCustomers", JSON.stringify(customers));
 }
+
+function saveJobTypes(){
+    localStorage.setItem("workshopJobTypes", JSON.stringify(jobTypes));
+}
+
+function saveJobs(){
+    localStorage.setItem("workshopJobs", JSON.stringify(jobs));
+}
+
+
+/* =================================
+   SECTION SWITCHING (CLEAN)
+================================= */
+
+function showSection(sectionId){
+    const sections = [
+        "dashboardSection",
+        "customersSection",
+        "jobsSection",
+        "calendarWrapper"
+    ];
+
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if(el){
+            el.style.display = (id === sectionId) ? "block" : "none";
+        }
+    });
+}
+
+function openDashboard(){
+    showSection("dashboardSection");
+}
+
+function openCustomers(){
+    showSection("customersSection");
+    renderCustomers();
+}
+
+function openJobs(){
+    showSection("jobsSection");
+    renderJobTypes();
+}
+
+function openCalendar(){
+    showSection("calendarWrapper");
+}
+
+
+/* =================================
+   CUSTOMERS
+================================= */
 
 function addCustomer(){
     const name = prompt("Customer Name:");
@@ -51,7 +85,7 @@ function addCustomer(){
     const phone = prompt("Phone:");
     const email = prompt("Email:");
 
-    customers.push({name,phone,email});
+    customers.push({name, phone, email});
     saveCustomers();
     renderCustomers();
 }
@@ -64,29 +98,26 @@ function deleteCustomer(index){
 
 function renderCustomers(){
     const table = document.getElementById("customerTableBody");
-    table.innerHTML="";
+    if(!table) return;
+
+    table.innerHTML = "";
 
     customers.forEach((customer,i)=>{
-        const row=document.createElement("tr");
-        row.innerHTML=`
+        const row = document.createElement("tr");
+        row.innerHTML = `
             <td>${customer.name}</td>
-            <td>${customer.phone||""}</td>
-            <td>${customer.email||""}</td>
+            <td>${customer.phone || ""}</td>
+            <td>${customer.email || ""}</td>
             <td><button onclick="deleteCustomer(${i})">✕</button></td>
         `;
         table.appendChild(row);
     });
 }
 
-/* =====================
+
+/* =================================
    JOB TYPES
-===================== */
-
-let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
-
-function saveJobTypes(){
-    localStorage.setItem("workshopJobTypes", JSON.stringify(jobTypes));
-}
+================================= */
 
 function addJobType(){
     const name = prompt("Service Name:");
@@ -94,7 +125,7 @@ function addJobType(){
 
     const description = prompt("Description:");
 
-    jobTypes.push({name,description});
+    jobTypes.push({name, description});
     saveJobTypes();
     renderJobTypes();
 }
@@ -109,40 +140,23 @@ function renderJobTypes(){
     const table = document.getElementById("jobTypesTableBody");
     if(!table) return;
 
-    table.innerHTML="";
+    table.innerHTML = "";
 
     jobTypes.forEach((job,i)=>{
-        const row=document.createElement("tr");
-        row.innerHTML=`
+        const row = document.createElement("tr");
+        row.innerHTML = `
             <td>${job.name}</td>
-            <td>${job.description||""}</td>
+            <td>${job.description || ""}</td>
             <td><button onclick="deleteJobType(${i})">✕</button></td>
         `;
         table.appendChild(row);
     });
 }
 
-/* =====================
+
+/* =================================
    CALENDAR
-===================== */
-
-let currentYear = new Date().getFullYear();
-let selectedDateKey = null;
-let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
-const MAX_BOOKINGS_PER_DAY = 10;
-
-let calendarGrid;
-let monthView;
-let dayPanel;
-let jobTableBody;
-
-function saveJobs(){
-    localStorage.setItem("workshopJobs", JSON.stringify(jobs));
-}
-
-function closeCalendar(){
-    openDashboard();
-}
+================================= */
 
 function changeYear(dir){
     currentYear += dir;
@@ -151,61 +165,71 @@ function changeYear(dir){
 
 function buildCalendar(){
 
-    document.getElementById("yearDisplay").innerText=currentYear;
-    calendarGrid.innerHTML="";
-    monthView.innerHTML="";
-    dayPanel.style.display="none";
-    calendarGrid.style.display="grid";
+    selectedDateKey = null;
+    currentMonthIndex = null;
 
-    const months=["January","February","March","April","May","June",
-                  "July","August","September","October","November","December"];
+    document.getElementById("yearDisplay").innerText = currentYear;
+    calendarGrid.innerHTML = "";
+    monthView.innerHTML = "";
+    dayPanel.style.display = "none";
+    calendarGrid.style.display = "grid";
+
+    const months = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ];
 
     months.forEach((month,index)=>{
-        const box=document.createElement("div");
-        box.className="month-box";
-        box.innerHTML=`<h3>${month}</h3>`;
-        box.onclick=()=>showMonth(month,index);
+        const box = document.createElement("div");
+        box.className = "month-box";
+        box.innerHTML = `<h3>${month}</h3>`;
+        box.onclick = () => showMonth(index);
         calendarGrid.appendChild(box);
     });
 
     updateDashboardToday();
 }
 
-function showMonth(month,monthIndex){
+function showMonth(monthIndex){
 
-    calendarGrid.style.display="none";
-    monthView.innerHTML="";
-    dayPanel.style.display="none";
+    currentMonthIndex = monthIndex;
 
-    const back=document.createElement("button");
-    back.innerText="← Back to Year";
-    back.onclick=buildCalendar;
+    calendarGrid.style.display = "none";
+    monthView.innerHTML = "";
+    dayPanel.style.display = "none";
 
-    const title=document.createElement("h2");
-    title.innerText=month+" "+currentYear;
+    const back = document.createElement("button");
+    back.innerText = "← Back to Year";
+    back.onclick = buildCalendar;
 
-    const grid=document.createElement("div");
-    grid.className="day-grid";
+    const title = document.createElement("h2");
+    title.innerText =
+        new Date(currentYear,monthIndex)
+        .toLocaleDateString('en-AU',{month:'long', year:'numeric'});
 
-    const days=new Date(currentYear,monthIndex+1,0).getDate();
+    const grid = document.createElement("div");
+    grid.className = "day-grid";
 
-    for(let d=1;d<=days;d++){
+    const days = new Date(currentYear,monthIndex+1,0).getDate();
 
-        const key=`${currentYear}-${monthIndex}-${d}`;
+    for(let d=1; d<=days; d++){
+
+        const key = `${currentYear}-${monthIndex}-${d}`;
         const count = jobs[key] ? jobs[key].length : 0;
 
-        const dayBox=document.createElement("div");
-        dayBox.className="day-box";
+        const dayBox = document.createElement("div");
+        dayBox.className = "day-box";
+
         if(count >= MAX_BOOKINGS_PER_DAY){
             dayBox.classList.add("day-full");
         }
 
-        dayBox.innerHTML=`
+        dayBox.innerHTML = `
             ${d}
-            ${count>0 ? `<div class="day-count">${count}</div>` : ""}
+            ${count > 0 ? `<div class="day-count">${count}</div>` : ""}
         `;
 
-        dayBox.onclick=()=>openDayView(d,monthIndex);
+        dayBox.onclick = () => openDayView(d);
         grid.appendChild(dayBox);
     }
 
@@ -214,19 +238,27 @@ function showMonth(month,monthIndex){
     monthView.appendChild(grid);
 }
 
-function openDayView(day,monthIndex){
+function openDayView(day){
 
-    monthView.innerHTML="";
-    dayPanel.style.display="block";
+    if(currentMonthIndex === null) return;
 
-    selectedDateKey=`${currentYear}-${monthIndex}-${day}`;
+    monthView.innerHTML = "";
+    dayPanel.style.display = "block";
 
-    const date=new Date(currentYear,monthIndex,day);
-    document.getElementById("dayTitle").innerText=
-        date.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+    selectedDateKey = `${currentYear}-${currentMonthIndex}-${day}`;
+
+    const date = new Date(currentYear,currentMonthIndex,day);
+
+    document.getElementById("dayTitle").innerText =
+        date.toLocaleDateString('en-AU',{
+            weekday:'long',
+            day:'numeric',
+            month:'long',
+            year:'numeric'
+        });
 
     if(!jobs[selectedDateKey]){
-        jobs[selectedDateKey]=[];
+        jobs[selectedDateKey] = [];
     }
 
     renderJobs();
@@ -234,19 +266,30 @@ function openDayView(day,monthIndex){
 }
 
 function updateSlotCounter(){
+    if(!selectedDateKey) return;
+
     const count = jobs[selectedDateKey].length;
     const remaining = MAX_BOOKINGS_PER_DAY - count;
 
     document.getElementById("slotCounter").innerText =
-        remaining <= 0 ? " - DAY FULL" : ` - ${remaining} Slots Available`;
+        remaining <= 0
+        ? " - DAY FULL"
+        : ` - ${remaining} Slots Available`;
 }
 
 function updateDashboardToday(){
-    const today=new Date();
-    const key=`${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    const today = new Date();
+    const key = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
     const count = jobs[key] ? jobs[key].length : 0;
-    document.getElementById("bookingCount").innerText=count;
+
+    const el = document.getElementById("bookingCount");
+    if(el) el.innerText = count;
 }
+
+
+/* =================================
+   JOBS
+================================= */
 
 function addVehicle(){
 
@@ -257,27 +300,28 @@ function addVehicle(){
         return;
     }
 
-    const rego=prompt("Rego:");
+    const rego = prompt("Rego:");
     if(!rego) return;
 
-    const customer=prompt("Customer:");
+    const customer = prompt("Customer:");
+    const status = prompt("Status:");
+    const notes = prompt("Notes:");
 
-    let type="";
+    let type = "";
+
     if(jobTypes.length > 0){
-        let list="Select Job Type:\n";
+        let list = "Select Job Type:\n";
         jobTypes.forEach((j,i)=>{
             list += `${i+1}. ${j.name}\n`;
         });
-        const choice=prompt(list);
+
+        const choice = prompt(list);
         if(choice && jobTypes[choice-1]){
-            type=jobTypes[choice-1].name;
+            type = jobTypes[choice-1].name;
         }
     } else {
-        type=prompt("Job Type:");
+        type = prompt("Job Type:");
     }
-
-    const status=prompt("Status:");
-    const notes=prompt("Notes:");
 
     jobs[selectedDateKey].push({rego,customer,type,status,notes});
     saveJobs();
@@ -294,16 +338,18 @@ function deleteJob(index){
 
 function renderJobs(){
 
-    jobTableBody.innerHTML="";
+    if(!jobTableBody || !selectedDateKey) return;
+
+    jobTableBody.innerHTML = "";
 
     jobs[selectedDateKey].forEach((job,i)=>{
-        const row=document.createElement("tr");
-        row.innerHTML=`
+        const row = document.createElement("tr");
+        row.innerHTML = `
             <td>${job.rego}</td>
-            <td>${job.customer||""}</td>
-            <td>${job.type||""}</td>
-            <td>${job.status||""}</td>
-            <td>${job.notes||""}</td>
+            <td>${job.customer || ""}</td>
+            <td>${job.type || ""}</td>
+            <td>${job.status || ""}</td>
+            <td>${job.notes || ""}</td>
             <td><button onclick="deleteJob(${i})">✕</button></td>
         `;
         jobTableBody.appendChild(row);
@@ -311,12 +357,35 @@ function renderJobs(){
 }
 
 function backToMonth(){
-    buildCalendar();
+    if(currentMonthIndex !== null){
+        showMonth(currentMonthIndex);
+    }
 }
 
-/* =====================
-   INIT (IMPORTANT FIX)
-===================== */
+
+/* =================================
+   DAY CYCLING
+================================= */
+
+function changeDay(direction){
+
+    if(!selectedDateKey) return;
+
+    const [year,month,day] = selectedDateKey.split("-").map(Number);
+    const date = new Date(year,month,day);
+
+    date.setDate(date.getDate() + direction);
+
+    currentYear = date.getFullYear();
+    currentMonthIndex = date.getMonth();
+
+    openDayView(date.getDate());
+}
+
+
+/* =================================
+   INIT
+================================= */
 
 document.addEventListener("DOMContentLoaded", function(){
 
@@ -328,43 +397,3 @@ document.addEventListener("DOMContentLoaded", function(){
     buildCalendar();
     openDashboard();
 });
-    
-// =======================
-// DAY CYCLING
-// =======================
-
-function changeDay(direction){
-
-    if(!selectedDateKey) return;
-
-    const parts = selectedDateKey.split("-");
-    let year = parseInt(parts[0]);
-    let month = parseInt(parts[1]);
-    let day = parseInt(parts[2]);
-
-    const currentDate = new Date(year, month, day);
-    currentDate.setDate(currentDate.getDate() + direction);
-
-    currentYear = currentDate.getFullYear();
-    const newMonth = currentDate.getMonth();
-    const newDay = currentDate.getDate();
-
-    selectedDateKey = `${currentYear}-${newMonth}-${newDay}`;
-
-    const date = new Date(currentYear, newMonth, newDay);
-
-    document.getElementById("dayTitle").innerText =
-        date.toLocaleDateString('en-AU',{
-            weekday:'long',
-            day:'numeric',
-            month:'long'
-        });
-
-    if(!jobs[selectedDateKey]){
-        jobs[selectedDateKey] = [];
-    }
-
-    renderJobs();
-    updateSlotCounter();
-}
-
