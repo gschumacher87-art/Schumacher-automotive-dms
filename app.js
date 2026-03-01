@@ -1,1 +1,3 @@
-document.body.style.background = "red";
+document.addEventListener("DOMContentLoaded", () => {
+    document.body.style.background = "blue";
+});
