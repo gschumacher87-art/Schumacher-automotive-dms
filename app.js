@@ -1,3 +1,4 @@
+alert("app.js is loading");
 /* =====================
    SECTION SWITCHING
 ===================== */
