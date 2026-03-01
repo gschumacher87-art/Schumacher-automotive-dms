@@ -327,4 +327,44 @@ document.addEventListener("DOMContentLoaded", function(){
     buildCalendar();
     openDashboard();
 });
+});
+    
+// =======================
+// DAY CYCLING
+// =======================
+
+function changeDay(direction){
+
+    if(!selectedDateKey) return;
+
+    const parts = selectedDateKey.split("-");
+    let year = parseInt(parts[0]);
+    let month = parseInt(parts[1]);
+    let day = parseInt(parts[2]);
+
+    const currentDate = new Date(year, month, day);
+    currentDate.setDate(currentDate.getDate() + direction);
+
+    currentYear = currentDate.getFullYear();
+    const newMonth = currentDate.getMonth();
+    const newDay = currentDate.getDate();
+
+    selectedDateKey = `${currentYear}-${newMonth}-${newDay}`;
+
+    const date = new Date(currentYear, newMonth, newDay);
+
+    document.getElementById("dayTitle").innerText =
+        date.toLocaleDateString('en-AU',{
+            weekday:'long',
+            day:'numeric',
+            month:'long'
+        });
+
+    if(!jobs[selectedDateKey]){
+        jobs[selectedDateKey] = [];
+    }
+
+    renderJobs();
+    updateSlotCounter();
+}
 
