@@ -4,7 +4,6 @@
 
 let currentYear = new Date().getFullYear();
 let selectedDateKey = null;
-let currentMonthIndex = null;
 
 let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
 let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
@@ -16,10 +15,11 @@ let calendarGrid;
 let monthView;
 let dayPanel;
 let jobTableBody;
+let currentMonthIndex = null;
 
 
 /* =================================
-   STORAGE
+   STORAGE HELPERS
 ================================= */
 
 function saveCustomers(){
@@ -277,9 +277,18 @@ function updateSlotCounter(){
         : ` - ${remaining} Slots Available`;
 }
 
+function updateDashboardToday(){
+    const today = new Date();
+    const key = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    const count = jobs[key] ? jobs[key].length : 0;
+
+    const el = document.getElementById("bookingCount");
+    if(el) el.innerText = count;
+}
+
 
 /* =================================
-   JOBS (10 SLOT VIEW)
+   JOBS — SPREADSHEET STYLE
 ================================= */
 
 function addVehicle(){
@@ -298,7 +307,21 @@ function addVehicle(){
     const status = prompt("Status:");
     const notes = prompt("Notes:");
 
-    jobs[selectedDateKey].push({rego,customer,status,notes});
+    let type = "";
+
+    if(jobTypes.length > 0){
+        let list = "Select Job Type:\n";
+        jobTypes.forEach((j,i)=>{
+            list += `${i+1}. ${j.name}\n`;
+        });
+
+        const choice = prompt(list);
+        if(choice && jobTypes[choice-1]){
+            type = jobTypes[choice-1].name;
+        }
+    }
+
+    jobs[selectedDateKey].push({rego,customer,type,status,notes});
     saveJobs();
     renderJobs();
     updateSlotCounter();
@@ -317,7 +340,7 @@ function renderJobs(){
 
     jobTableBody.innerHTML = "";
 
-    const dayJobs = jobs[selectedDateKey];
+    const dayJobs = jobs[selectedDateKey] || [];
 
     for(let i = 0; i < MAX_BOOKINGS_PER_DAY; i++){
 
@@ -330,6 +353,7 @@ function renderJobs(){
             row.innerHTML = `
                 <td>${job.rego}</td>
                 <td>${job.customer || ""}</td>
+                <td>${job.type || ""}</td>
                 <td>${job.status || ""}</td>
                 <td>${job.notes || ""}</td>
                 <td><button onclick="deleteJob(${i})">✕</button></td>
@@ -343,11 +367,38 @@ function renderJobs(){
                 <td></td>
                 <td></td>
                 <td></td>
+                <td></td>
             `;
         }
 
         jobTableBody.appendChild(row);
     }
+}
+
+function backToMonth(){
+    if(currentMonthIndex !== null){
+        showMonth(currentMonthIndex);
+    }
+}
+
+
+/* =================================
+   DAY CYCLING
+================================= */
+
+function changeDay(direction){
+
+    if(!selectedDateKey) return;
+
+    const [year,month,day] = selectedDateKey.split("-").map(Number);
+    const date = new Date(year,month,day);
+
+    date.setDate(date.getDate() + direction);
+
+    currentYear = date.getFullYear();
+    currentMonthIndex = date.getMonth();
+
+    openDayView(date.getDate());
 }
 
 
