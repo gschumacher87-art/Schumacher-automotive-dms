@@ -1,3 +1,4 @@
+let selectedDateKey = null;
 console.log("JS LOADED");
 /* =====================
    SECTION SWITCHING
