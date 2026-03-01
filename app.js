@@ -1,330 +1,138 @@
-window.onerror = function(message) {
-    alert("JS ERROR: " + message);
+// ===============================
+// SCHUMACHER AUTOMOTIVE DMS
+// CLEAN CORE APP.JS
+// ===============================
+
+// ---------- GLOBAL STATE ----------
+const App = {
+    currentDate: new Date(),
+    view: "month", // month | day
 };
-alert("app.js is loading");
-/* =====================
-   SECTION SWITCHING
-===================== */
 
-function openDashboard(){
-    document.getElementById("dashboardSection").style.display="block";
-    document.getElementById("customersSection").style.display="none";
-    document.getElementById("jobsSection").style.display="none";
-    document.getElementById("calendarWrapper").style.display="none";
+// ---------- INIT ----------
+document.addEventListener("DOMContentLoaded", () => {
+    init();
+});
+
+function init() {
+    bindNavigation();
+    render();
 }
 
-function openCustomers(){
-    document.getElementById("dashboardSection").style.display="none";
-    document.getElementById("customersSection").style.display="block";
-    document.getElementById("jobsSection").style.display="none";
-    document.getElementById("calendarWrapper").style.display="none";
-    renderCustomers();
-}
+// ---------- NAVIGATION ----------
+function bindNavigation() {
+    const monthBtn = document.getElementById("monthBtn");
+    const todayBtn = document.getElementById("todayBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
 
-function openJobs(){
-    document.getElementById("dashboardSection").style.display="none";
-    document.getElementById("customersSection").style.display="none";
-    document.getElementById("jobsSection").style.display="block";
-    document.getElementById("calendarWrapper").style.display="none";
-    renderJobTypes();
-}
-
-function openCalendar(){
-    document.getElementById("dashboardSection").style.display="none";
-    document.getElementById("customersSection").style.display="none";
-    document.getElementById("jobsSection").style.display="none";
-    document.getElementById("calendarWrapper").style.display="block";
-}
-
-/* =====================
-   CUSTOMERS
-===================== */
-
-let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
-
-function saveCustomers(){
-    localStorage.setItem("workshopCustomers", JSON.stringify(customers));
-}
-
-function addCustomer(){
-    const name = prompt("Customer Name:");
-    if(!name) return;
-
-    const phone = prompt("Phone:");
-    const email = prompt("Email:");
-
-    customers.push({name,phone,email});
-    saveCustomers();
-    renderCustomers();
-}
-
-function deleteCustomer(index){
-    customers.splice(index,1);
-    saveCustomers();
-    renderCustomers();
-}
-
-function renderCustomers(){
-    const table = document.getElementById("customerTableBody");
-    if(!table) return;
-
-    table.innerHTML="";
-
-    customers.forEach((customer,i)=>{
-        const row=document.createElement("tr");
-        row.innerHTML=`
-            <td>${customer.name}</td>
-            <td>${customer.phone||""}</td>
-            <td>${customer.email||""}</td>
-            <td><button onclick="deleteCustomer(${i})">✕</button></td>
-        `;
-        table.appendChild(row);
-    });
-}
-
-/* =====================
-   JOB TYPES DATABASE
-===================== */
-
-let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
-
-function saveJobTypes(){
-    localStorage.setItem("workshopJobTypes", JSON.stringify(jobTypes));
-}
-
-function addJobType(){
-    const name = prompt("Service Name:");
-    if(!name) return;
-
-    const description = prompt("Description:");
-
-    jobTypes.push({name,description});
-    saveJobTypes();
-    renderJobTypes();
-}
-
-function deleteJobType(index){
-    jobTypes.splice(index,1);
-    saveJobTypes();
-    renderJobTypes();
-}
-
-function renderJobTypes(){
-    const table = document.getElementById("jobTypesTableBody");
-    if(!table) return;
-
-    table.innerHTML="";
-
-    jobTypes.forEach((job,i)=>{
-        const row=document.createElement("tr");
-        row.innerHTML=`
-            <td>${job.name}</td>
-            <td>${job.description||""}</td>
-            <td><button onclick="deleteJobType(${i})">✕</button></td>
-        `;
-        table.appendChild(row);
-    });
-}
-
-/* =====================
-   CALENDAR
-===================== */
-
-let currentYear = new Date().getFullYear();
-let selectedDateKey = null;
-let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
-const MAX_BOOKINGS_PER_DAY = 10;
-
-const calendarGrid = document.getElementById("calendarGrid");
-const monthView = document.getElementById("monthView");
-const dayPanel = document.getElementById("dayPanel");
-const jobTableBody = document.getElementById("jobTableBody");
-
-function saveJobs(){
-    localStorage.setItem("workshopJobs", JSON.stringify(jobs));
-}
-
-function closeCalendar(){
-    openDashboard();
-}
-
-function changeYear(dir){
-    currentYear += dir;
-    buildCalendar();
-}
-
-function buildCalendar(){
-
-    document.getElementById("yearDisplay").innerText=currentYear;
-    calendarGrid.innerHTML="";
-    monthView.innerHTML="";
-    dayPanel.style.display="none";
-    calendarGrid.style.display="grid";
-
-    const months=["January","February","March","April","May","June",
-                  "July","August","September","October","November","December"];
-
-    months.forEach((month,index)=>{
-        const box=document.createElement("div");
-        box.className="month-box";
-        box.innerHTML=`<h3>${month}</h3>`;
-        box.onclick=()=>showMonth(month,index);
-        calendarGrid.appendChild(box);
-    });
-
-    updateDashboardToday();
-}
-
-function showMonth(month,monthIndex){
-
-    calendarGrid.style.display="none";
-    monthView.innerHTML="";
-    dayPanel.style.display="none";
-
-    const back=document.createElement("button");
-    back.innerText="← Back to Year";
-    back.onclick=buildCalendar;
-
-    const title=document.createElement("h2");
-    title.innerText=month+" "+currentYear;
-
-    const grid=document.createElement("div");
-    grid.className="day-grid";
-
-    const days=new Date(currentYear,monthIndex+1,0).getDate();
-
-    for(let d=1;d<=days;d++){
-
-        const key=`${currentYear}-${monthIndex}-${d}`;
-        const count = jobs[key] ? jobs[key].length : 0;
-
-        const dayBox=document.createElement("div");
-        dayBox.className="day-box";
-        if(count >= MAX_BOOKINGS_PER_DAY){
-            dayBox.classList.add("day-full");
-        }
-
-        dayBox.innerHTML=`
-            ${d}
-            ${count>0 ? `<div class="day-count">${count}</div>` : ""}
-        `;
-
-        dayBox.onclick=()=>openDayView(d,monthIndex);
-        grid.appendChild(dayBox);
-    }
-
-    monthView.appendChild(back);
-    monthView.appendChild(title);
-    monthView.appendChild(grid);
-}
-
-function openDayView(day,monthIndex){
-
-    monthView.innerHTML="";
-    dayPanel.style.display="block";
-
-    selectedDateKey=`${currentYear}-${monthIndex}-${day}`;
-
-    const date=new Date(currentYear,monthIndex,day);
-    document.getElementById("dayTitle").innerText=
-        date.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
-
-    if(!jobs[selectedDateKey]){
-        jobs[selectedDateKey]=[];
-    }
-
-    renderJobs();
-    updateSlotCounter();
-}
-
-function updateSlotCounter(){
-    const count = jobs[selectedDateKey].length;
-    const remaining = MAX_BOOKINGS_PER_DAY - count;
-
-    if(remaining <= 0){
-        document.getElementById("slotCounter").innerText=" - DAY FULL";
-    } else {
-        document.getElementById("slotCounter").innerText=
-            ` - ${remaining} Slots Available`;
-    }
-}
-
-function updateDashboardToday(){
-    const today=new Date();
-    const key=`${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-    const count = jobs[key] ? jobs[key].length : 0;
-    document.getElementById("bookingCount").innerText=count;
-}
-
-function addVehicle(){
-
-    if(!selectedDateKey) return;
-
-    if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
-        alert("Day is fully booked");
-        return;
-    }
-
-    const rego=prompt("Rego:");
-    if(!rego) return;
-
-    const customer=prompt("Customer:");
-
-    let type="";
-    if(jobTypes.length > 0){
-        let list="Select Job Type:\n";
-        jobTypes.forEach((j,i)=>{
-            list += `${i+1}. ${j.name}\n`;
+    if (monthBtn) {
+        monthBtn.addEventListener("click", () => {
+            App.view = "month";
+            render();
         });
-        const choice=prompt(list);
-        if(choice && jobTypes[choice-1]){
-            type=jobTypes[choice-1].name;
-        }
-    } else {
-        type=prompt("Job Type:");
     }
 
-    const status=prompt("Status:");
-    const notes=prompt("Notes:");
+    if (todayBtn) {
+        todayBtn.addEventListener("click", () => {
+            App.currentDate = new Date();
+            render();
+        });
+    }
 
-    jobs[selectedDateKey].push({rego,customer,type,status,notes});
-    saveJobs();
-    renderJobs();
-    updateSlotCounter();
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            if (App.view === "month") {
+                App.currentDate.setMonth(App.currentDate.getMonth() - 1);
+            } else {
+                App.currentDate.setDate(App.currentDate.getDate() - 1);
+            }
+            render();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            if (App.view === "month") {
+                App.currentDate.setMonth(App.currentDate.getMonth() + 1);
+            } else {
+                App.currentDate.setDate(App.currentDate.getDate() + 1);
+            }
+            render();
+        });
+    }
 }
 
-function deleteJob(index){
-    jobs[selectedDateKey].splice(index,1);
-    saveJobs();
-    renderJobs();
-    updateSlotCounter();
+// ---------- MAIN RENDER ----------
+function render() {
+    const calendar = document.getElementById("calendar");
+    if (!calendar) return;
+
+    calendar.innerHTML = "";
+
+    if (App.view === "month") {
+        renderMonth(calendar);
+    } else {
+        renderDay(calendar);
+    }
 }
 
-function renderJobs(){
+// ---------- MONTH VIEW ----------
+function renderMonth(container) {
+    const year = App.currentDate.getFullYear();
+    const month = App.currentDate.getMonth();
 
-    jobTableBody.innerHTML="";
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
-    jobs[selectedDateKey].forEach((job,i)=>{
-        const row=document.createElement("tr");
-        row.innerHTML=`
-            <td>${job.rego}</td>
-            <td>${job.customer||""}</td>
-            <td>${job.type||""}</td>
-            <td>${job.status||""}</td>
-            <td>${job.notes||""}</td>
-            <td><button onclick="deleteJob(${i})">✕</button></td>
-        `;
-        jobTableBody.appendChild(row);
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+
+    const grid = document.createElement("div");
+    grid.className = "month-grid";
+
+    // Empty cells before month starts
+    for (let i = 0; i < startDay; i++) {
+        const empty = document.createElement("div");
+        empty.className = "day empty";
+        grid.appendChild(empty);
+    }
+
+    // Actual days
+    for (let day = 1; day <= totalDays; day++) {
+        const cell = document.createElement("div");
+        cell.className = "day";
+        cell.innerText = day;
+
+        cell.addEventListener("click", () => {
+            App.currentDate = new Date(year, month, day);
+            App.view = "day";
+            render();
+        });
+
+        grid.appendChild(cell);
+    }
+
+    container.appendChild(grid);
+}
+
+// ---------- DAY VIEW ----------
+function renderDay(container) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "day-view";
+
+    const title = document.createElement("h2");
+    title.innerText = App.currentDate.toDateString();
+
+    const backBtn = document.createElement("button");
+    backBtn.innerText = "Back to Month";
+    backBtn.addEventListener("click", () => {
+        App.view = "month";
+        render();
     });
+
+    wrapper.appendChild(title);
+    wrapper.appendChild(backBtn);
+
+    container.appendChild(wrapper);
 }
-
-function backToMonth(){
-    buildCalendar();
-}
-
-/* =====================
-   INIT
-===================== */
-
-buildCalendar();
-openDashboard();
