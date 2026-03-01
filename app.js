@@ -1,4 +1,3 @@
-
 /* =====================
    SECTION SWITCHING
 ===================== */
@@ -195,6 +194,7 @@ function showMonth(month,monthIndex){
 
         const dayBox=document.createElement("div");
         dayBox.className="day-box";
+
         if(count >= MAX_BOOKINGS_PER_DAY){
             dayBox.classList.add("day-full");
         }
@@ -319,4 +319,3 @@ function backToMonth(){
 
 buildCalendar();
 openDashboard();
-
