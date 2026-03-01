@@ -1,3 +1,4 @@
+console.log("JS LOADED");
 /* =====================
    SECTION SWITCHING
 ===================== */
@@ -326,7 +327,4 @@ document.addEventListener("DOMContentLoaded", function(){
     buildCalendar();
     openDashboard();
 });
-function changeYear() {}
-function closeCalendar() {}
-function backToMonth() {}
-function addVehicle() {}
+
