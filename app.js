@@ -62,7 +62,7 @@ function openCalendar(){ showSection("calendarWrapper"); }
 
 
 /* =================================
-   CUSTOMER + VEHICLE STRUCTURE
+   CUSTOMERS + VEHICLES
 ================================= */
 
 function addCustomer(){
@@ -81,12 +81,6 @@ function addCustomer(){
         vehicles: []
     });
 
-    saveCustomers();
-    renderCustomers();
-}
-
-function deleteCustomer(index){
-    customers.splice(index,1);
     saveCustomers();
     renderCustomers();
 }
@@ -117,6 +111,12 @@ function addVehicleToCustomer(customerId){
     renderCustomers();
 }
 
+function deleteCustomer(customerId){
+    customers = customers.filter(c => c.id !== customerId);
+    saveCustomers();
+    renderCustomers();
+}
+
 function renderCustomers(){
 
     const table = document.getElementById("customerTableBody");
@@ -124,7 +124,7 @@ function renderCustomers(){
 
     table.innerHTML = "";
 
-    customers.forEach((c,i)=>{
+    customers.forEach(c => {
 
         const row = document.createElement("tr");
 
@@ -132,10 +132,10 @@ function renderCustomers(){
             <td>${c.name}</td>
             <td>${c.phone || ""}</td>
             <td>${c.email || ""}</td>
-            <td>${c.vehicles.length} vehicles</td>
+            <td>${c.vehicles.length}</td>
             <td>
                 <button onclick="addVehicleToCustomer(${c.id})">+ Vehicle</button>
-                <button onclick="deleteCustomer(${i})">✕</button>
+                <button onclick="deleteCustomer(${c.id})">✕</button>
             </td>
         `;
 
@@ -145,7 +145,7 @@ function renderCustomers(){
 
 
 /* =================================
-   JOB TYPES
+   JOB TEMPLATES
 ================================= */
 
 function addJobType(){
@@ -164,7 +164,10 @@ function addJobType(){
 
         const quantity = parseFloat(prompt("Quantity:")) || 1;
 
-        parts.push({ partName, quantity });
+        parts.push({
+            partName,
+            quantity
+        });
     }
 
     jobTypes.push({
@@ -193,37 +196,18 @@ function renderJobTypes(){
     table.innerHTML = "";
 
     jobTypes.forEach((j,i)=>{
-
         const row = document.createElement("tr");
 
         row.innerHTML = `
             <td>${j.name}</td>
             <td>${j.description || ""}</td>
-            <td>${j.defaultHours || 0} hrs</td>
-            <td>${j.parts.length} parts</td>
+            <td>${j.defaultHours} hrs</td>
+            <td>${j.parts.length}</td>
             <td><button onclick="deleteJobType(${i})">✕</button></td>
         `;
 
         table.appendChild(row);
     });
-}
-
-
-/* =================================
-   VEHICLE LOOKUP
-================================= */
-
-function findVehicleByRego(rego){
-
-    for(const customer of customers){
-        for(const vehicle of customer.vehicles){
-            if(vehicle.rego.toLowerCase() === rego.toLowerCase()){
-                return { customer, vehicle };
-            }
-        }
-    }
-
-    return null;
 }
 
 
@@ -313,65 +297,110 @@ function showMonth(monthIndex){
 
 function openDayView(day){
 
-    if(currentMonthIndex === null) return;
-
     monthView.innerHTML = "";
     dayPanel.style.display = "block";
 
     selectedDateKey = `${currentYear}-${currentMonthIndex}-${day}`;
-
-    const date = new Date(currentYear,currentMonthIndex,day);
-
-    document.getElementById("dayTitle").innerText =
-        date.toLocaleDateString('en-AU',{
-            weekday:'long',
-            day:'numeric',
-            month:'long',
-            year:'numeric'
-        });
 
     if(!jobs[selectedDateKey]){
         jobs[selectedDateKey] = [];
     }
 
     renderJobs();
+    updateSlotCounter();
 }
 
 
 /* =================================
-   BOOKINGS NOW USE VEHICLES
+   BOOKINGS (PROPERLY LINKED)
 ================================= */
 
 function addVehicle(){
 
     if(!selectedDateKey) return;
-
-    const rego = prompt("Enter Rego to Lookup:");
-
-    const result = findVehicleByRego(rego);
-
-    if(!result){
-        alert("Vehicle not found. Add it under Customers first.");
+    if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
+        alert("Day is fully booked");
         return;
     }
 
-    const { customer, vehicle } = result;
+    let vehicleList = "Select Vehicle:\n";
+    let vehicleMap = [];
+
+    customers.forEach(customer=>{
+        customer.vehicles.forEach(vehicle=>{
+            vehicleList += `${vehicleMap.length+1}. ${vehicle.rego} - ${customer.name}\n`;
+            vehicleMap.push({
+                customerId: customer.id,
+                vehicleId: vehicle.id
+            });
+        });
+    });
+
+    if(vehicleMap.length === 0){
+        alert("No vehicles exist.");
+        return;
+    }
+
+    const choice = prompt(vehicleList);
+    const selected = vehicleMap[choice-1];
+    if(!selected) return;
+
+    const status = prompt("Status:");
+    const notes = prompt("Notes:");
+
+    let templateId = null;
+    let type = "";
+    let hours = 0;
+    let parts = [];
+
+    if(jobTypes.length > 0){
+
+        let list = "Select Job Type:\n";
+        jobTypes.forEach((j,i)=>{
+            list += `${i+1}. ${j.name}\n`;
+        });
+
+        const jobChoice = prompt(list);
+
+        if(jobChoice && jobTypes[jobChoice-1]){
+            const template = jobTypes[jobChoice-1];
+            templateId = template.id;
+            type = template.name;
+            hours = template.defaultHours;
+            parts = JSON.parse(JSON.stringify(template.parts));
+
+            const adjustHours = prompt(`Adjust Labour Hours (Default ${hours}):`);
+            if(adjustHours !== null){
+                hours = parseFloat(adjustHours) || hours;
+            }
+        }
+    }
 
     jobs[selectedDateKey].push({
         id: Date.now(),
-        customerId: customer.id,
-        vehicleId: vehicle.id,
-        rego: vehicle.rego,
-        customerName: customer.name
+        customerId: selected.customerId,
+        vehicleId: selected.vehicleId,
+        templateId,
+        type,
+        hours,
+        parts,
+        status,
+        notes
     });
 
     saveJobs();
     renderJobs();
+    updateSlotCounter();
+}
+
+function deleteJob(index){
+    jobs[selectedDateKey].splice(index,1);
+    saveJobs();
+    renderJobs();
+    updateSlotCounter();
 }
 
 function renderJobs(){
-
-    if(!selectedDateKey) return;
 
     const tableBody = document.getElementById("bookingsBody");
     if(!tableBody) return;
@@ -380,25 +409,54 @@ function renderJobs(){
 
     const dayJobs = jobs[selectedDateKey] || [];
 
-    dayJobs.forEach((job,i)=>{
+    for(let i=0;i<MAX_BOOKINGS_PER_DAY;i++){
 
         const row = document.createElement("tr");
 
-        row.innerHTML = `
-            <td>${i+1}</td>
-            <td>${job.rego}</td>
-            <td>${job.customerName}</td>
-            <td><button onclick="deleteJob(${i})">✕</button></td>
-        `;
+        if(dayJobs[i]){
+
+            const job = dayJobs[i];
+            const customer = customers.find(c=>c.id===job.customerId);
+            const vehicle = customer
+                ? customer.vehicles.find(v=>v.id===job.vehicleId)
+                : null;
+
+            row.innerHTML = `
+                <td>${i+1}</td>
+                <td>${vehicle ? vehicle.rego : ""}</td>
+                <td>${customer ? customer.name : ""}</td>
+                <td>${job.type || ""}</td>
+                <td>${job.hours} hrs</td>
+                <td>${job.status || ""}</td>
+                <td>${job.notes || ""}</td>
+                <td><button onclick="deleteJob(${i})">✕</button></td>
+            `;
+
+        } else {
+
+            row.innerHTML = `
+                <td>${i+1}</td>
+                <td style="opacity:0.3;">Empty</td>
+                <td></td><td></td><td></td><td></td><td></td><td></td>
+            `;
+
+            row.style.cursor = "pointer";
+            row.onclick = ()=> addVehicle();
+        }
 
         tableBody.appendChild(row);
-    });
+    }
 }
 
-function deleteJob(index){
-    jobs[selectedDateKey].splice(index,1);
-    saveJobs();
-    renderJobs();
+function updateSlotCounter(){
+
+    const count = jobs[selectedDateKey].length;
+    const remaining = MAX_BOOKINGS_PER_DAY - count;
+
+    document.getElementById("slotCounter").innerText =
+        remaining <= 0
+        ? " - DAY FULL"
+        : ` - ${remaining} Slots Available`;
 }
 
 
