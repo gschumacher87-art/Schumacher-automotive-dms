@@ -18,14 +18,18 @@ let dayPanel;
 
 
 /* =================================
-   CUSTOMER STRUCTURE UPGRADE
-   (Backwards Compatible)
+   DATA NORMALISATION
 ================================= */
 
-customers.forEach(c=>{
-    if(!c.id) c.id = Date.now() + Math.random();
-    if(!c.vehicles) c.vehicles = [];
-});
+// Ensure customer structure integrity
+customers = customers.map(c => ({
+    id: c.id || Date.now() + Math.random(),
+    name: c.name || "",
+    phone: c.phone || "",
+    email: c.email || "",
+    vehicles: Array.isArray(c.vehicles) ? c.vehicles : []
+}));
+
 saveCustomers();
 
 
@@ -51,20 +55,13 @@ function saveJobs(){
 ================================= */
 
 function showSection(sectionId){
-
-    const sections = [
-        "dashboardSection",
-        "customersSection",
-        "jobsSection",
-        "calendarWrapper"
-    ];
-
-    sections.forEach(id=>{
-        const el = document.getElementById(id);
-        if(el){
-            el.style.display = (id === sectionId) ? "block" : "none";
-        }
-    });
+    ["dashboardSection","customersSection","jobsSection","calendarWrapper"]
+        .forEach(id=>{
+            const el = document.getElementById(id);
+            if(el){
+                el.style.display = id === sectionId ? "block" : "none";
+            }
+        });
 }
 
 function openDashboard(){ showSection("dashboardSection"); }
@@ -111,7 +108,7 @@ function addVehicleToCustomer(index){
     const make = prompt("Make:");
     const model = prompt("Model:");
     const year = prompt("Year:");
-    const notes = prompt("Vehicle Notes:");
+    const notes = prompt("Notes:");
 
     customers[index].vehicles.push({
         rego,
@@ -130,7 +127,12 @@ function searchCustomers(){
     const input = document.getElementById("customerSearchInput");
     if(!input) return;
 
-    const search = input.value.toLowerCase();
+    const term = input.value.toLowerCase();
+    renderCustomers(term);
+}
+
+function renderCustomers(searchTerm=""){
+
     const table = document.getElementById("customerTableBody");
     if(!table) return;
 
@@ -139,59 +141,42 @@ function searchCustomers(){
     customers.forEach((c,i)=>{
 
         const match =
-            c.name.toLowerCase().includes(search) ||
-            (c.phone && c.phone.includes(search)) ||
-            (c.email && c.email.toLowerCase().includes(search)) ||
-            c.vehicles.some(v => v.rego.toLowerCase().includes(search));
+            c.name.toLowerCase().includes(searchTerm) ||
+            c.phone.includes(searchTerm) ||
+            c.email.toLowerCase().includes(searchTerm) ||
+            c.vehicles.some(v => v.rego.toLowerCase().includes(searchTerm));
 
-        if(!match) return;
+        if(searchTerm && !match) return;
 
-        renderCustomerRow(c,i,table);
-    });
-}
+        const row = document.createElement("tr");
 
-function renderCustomers(){
-
-    const table = document.getElementById("customerTableBody");
-    if(!table) return;
-
-    table.innerHTML = "";
-
-    customers.forEach((c,i)=>{
-        renderCustomerRow(c,i,table);
-    });
-}
-
-function renderCustomerRow(c,i,table){
-
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-        <td>${c.name}</td>
-        <td>${c.phone || ""}</td>
-        <td>${c.email || ""}</td>
-        <td>${c.vehicles.length}</td>
-        <td>
-            <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
-            <button onclick="deleteCustomer(${i})">✕</button>
-        </td>
-    `;
-
-    table.appendChild(row);
-
-    c.vehicles.forEach(v=>{
-        const vehicleRow = document.createElement("tr");
-        vehicleRow.style.background = "#f3f3f3";
-
-        vehicleRow.innerHTML = `
-            <td style="padding-left:30px;">↳ ${v.rego}</td>
-            <td>${v.make || ""}</td>
-            <td>${v.model || ""}</td>
-            <td>${v.year || ""}</td>
-            <td>${v.notes || ""}</td>
+        row.innerHTML = `
+            <td>${c.name}</td>
+            <td>${c.phone}</td>
+            <td>${c.email}</td>
+            <td>${c.vehicles.length}</td>
+            <td>
+                <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
+                <button onclick="deleteCustomer(${i})">✕</button>
+            </td>
         `;
 
-        table.appendChild(vehicleRow);
+        table.appendChild(row);
+
+        c.vehicles.forEach(v=>{
+            const vehicleRow = document.createElement("tr");
+            vehicleRow.style.background = "#f3f3f3";
+
+            vehicleRow.innerHTML = `
+                <td style="padding-left:30px;">↳ ${v.rego}</td>
+                <td>${v.make}</td>
+                <td>${v.model}</td>
+                <td>${v.year}</td>
+                <td>${v.notes}</td>
+            `;
+
+            table.appendChild(vehicleRow);
+        });
     });
 }
 
@@ -206,8 +191,7 @@ function addJobType(){
     if(!name) return;
 
     const description = prompt("Description:");
-    const defaultHoursInput = prompt("Default Labour Hours:");
-    const defaultHours = parseFloat(defaultHoursInput) || 0;
+    const defaultHours = parseFloat(prompt("Default Labour Hours:")) || 0;
 
     let parts = [];
 
@@ -215,10 +199,8 @@ function addJobType(){
         const partName = prompt("Add Part Name (Cancel to stop):");
         if(!partName) break;
 
-        const qtyInput = prompt("Quantity:");
-        const quantity = parseFloat(qtyInput) || 1;
-
-        parts.push({ partName, quantity });
+        const quantity = parseFloat(prompt("Quantity:")) || 1;
+        parts.push({partName,quantity});
     }
 
     jobTypes.push({
@@ -248,22 +230,20 @@ function renderJobTypes(){
 
     jobTypes.forEach((j,i)=>{
         const row = document.createElement("tr");
-
         row.innerHTML = `
             <td>${j.name}</td>
-            <td>${j.description || ""}</td>
-            <td>${j.defaultHours || 0} hrs</td>
-            <td>${j.parts ? j.parts.length : 0} parts</td>
+            <td>${j.description}</td>
+            <td>${j.defaultHours} hrs</td>
+            <td>${j.parts.length}</td>
             <td><button onclick="deleteJobType(${i})">✕</button></td>
         `;
-
         table.appendChild(row);
     });
 }
 
 
 /* =================================
-   CALENDAR (UNCHANGED LOGIC)
+   CALENDAR
 ================================= */
 
 function changeYear(dir){
@@ -312,7 +292,8 @@ function showMonth(monthIndex){
     back.onclick = buildCalendar;
 
     const title = document.createElement("h2");
-    title.innerText = new Date(currentYear,monthIndex)
+    title.innerText =
+        new Date(currentYear,monthIndex)
         .toLocaleDateString('en-AU',{month:'long',year:'numeric'});
 
     const grid = document.createElement("div");
@@ -332,10 +313,8 @@ function showMonth(monthIndex){
             dayBox.classList.add("day-full");
         }
 
-        dayBox.innerHTML = `
-            ${d}
-            ${count>0 ? `<div class="day-count">${count}</div>` : ""}
-        `;
+        dayBox.innerHTML =
+            `${d}${count>0 ? `<div class="day-count">${count}</div>`:""}`;
 
         dayBox.onclick = ()=> openDayView(d);
         grid.appendChild(dayBox);
@@ -353,9 +332,11 @@ function openDayView(day){
     monthView.innerHTML = "";
     dayPanel.style.display = "block";
 
-    selectedDateKey = `${currentYear}-${currentMonthIndex}-${day}`;
+    selectedDateKey =
+        `${currentYear}-${currentMonthIndex}-${day}`;
 
-    const date = new Date(currentYear,currentMonthIndex,day);
+    const date =
+        new Date(currentYear,currentMonthIndex,day);
 
     document.getElementById("dayTitle").innerText =
         date.toLocaleDateString('en-AU',{
@@ -377,23 +358,156 @@ function updateSlotCounter(){
 
     if(!selectedDateKey) return;
 
-    const count = jobs[selectedDateKey].length;
-    const remaining = MAX_BOOKINGS_PER_DAY - count;
+    const remaining =
+        MAX_BOOKINGS_PER_DAY -
+        jobs[selectedDateKey].length;
 
     document.getElementById("slotCounter").innerText =
-        remaining <= 0
-        ? " - DAY FULL"
-        : ` - ${remaining} Slots Available`;
+        remaining <= 0 ?
+        " - DAY FULL" :
+        ` - ${remaining} Slots Available`;
 }
 
 function updateDashboardToday(){
 
     const today = new Date();
-    const key = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    const key =
+        `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+
     const count = jobs[key] ? jobs[key].length : 0;
 
     const el = document.getElementById("bookingCount");
     if(el) el.innerText = count;
+}
+
+
+/* =================================
+   JOBS TABLE
+================================= */
+
+function addVehicle(){
+
+    if(!selectedDateKey) return;
+    if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
+        alert("Day is fully booked");
+        return;
+    }
+
+    const rego = prompt("Rego:");
+    if(!rego) return;
+
+    const customer = prompt("Customer:");
+    const status = prompt("Status:");
+    const notes = prompt("Notes:");
+
+    let templateId = null;
+    let type = "";
+    let hours = 0;
+    let parts = [];
+
+    if(jobTypes.length > 0){
+
+        let list = "Select Job Type:\n";
+
+        jobTypes.forEach((j,i)=>{
+            list += `${i+1}. ${j.name}\n`;
+        });
+
+        const choice = prompt(list);
+
+        if(choice && jobTypes[choice-1]){
+
+            const template = jobTypes[choice-1];
+
+            templateId = template.id;
+            type = template.name;
+            hours = template.defaultHours || 0;
+            parts = JSON.parse(JSON.stringify(template.parts || []));
+
+            const adjust =
+                prompt(`Adjust Labour Hours (Default ${hours}):`);
+
+            if(adjust !== null){
+                hours = parseFloat(adjust) || hours;
+            }
+        }
+    }
+
+    jobs[selectedDateKey].push({
+        id: Date.now(),
+        rego,
+        customer,
+        templateId,
+        type,
+        hours,
+        parts,
+        status,
+        notes
+    });
+
+    saveJobs();
+    renderJobs();
+    updateSlotCounter();
+}
+
+function deleteJob(index){
+    jobs[selectedDateKey].splice(index,1);
+    saveJobs();
+    renderJobs();
+    updateSlotCounter();
+}
+
+function renderJobs(){
+
+    if(!selectedDateKey) return;
+
+    const tableBody =
+        document.getElementById("bookingsBody");
+    if(!tableBody) return;
+
+    tableBody.innerHTML = "";
+
+    const dayJobs = jobs[selectedDateKey] || [];
+
+    for(let i=0;i<MAX_BOOKINGS_PER_DAY;i++){
+
+        const row = document.createElement("tr");
+
+        if(dayJobs[i]){
+
+            const job = dayJobs[i];
+
+            row.innerHTML = `
+                <td>${i+1}</td>
+                <td>${job.rego}</td>
+                <td>${job.customer}</td>
+                <td>${job.type}</td>
+                <td>${job.hours} hrs</td>
+                <td>${job.status}</td>
+                <td>${job.notes}</td>
+                <td><button onclick="deleteJob(${i})">✕</button></td>
+            `;
+
+        } else {
+
+            row.innerHTML = `
+                <td>${i+1}</td>
+                <td style="opacity:0.3;">Empty</td>
+                <td></td><td></td><td></td><td></td><td></td><td></td>
+            `;
+
+            row.style.cursor = "pointer";
+            row.onclick = ()=> addVehicle();
+        }
+
+        tableBody.appendChild(row);
+    }
+}
+
+function backToMonth(){
+    if(currentMonthIndex !== null){
+        showMonth(currentMonthIndex);
+    }
 }
 
 
@@ -409,4 +523,4 @@ document.addEventListener("DOMContentLoaded",function(){
 
     buildCalendar();
     openDashboard();
-})
+});
