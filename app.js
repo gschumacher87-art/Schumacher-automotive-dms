@@ -7,41 +7,7 @@ let selectedDateKey = null;
 let currentMonthIndex = null;
 
 let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
-
-/* 
-NEW STRUCTURE:
-Job Template Object:
-
-{
-    id: number,
-    name: string,
-    description: string,
-    defaultHours: number,
-    parts: [
-        {
-            partName: string,
-            quantity: number
-        }
-    ]
-}
-*/
 let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
-
-/*
-Booking Job Object:
-
-{
-    id: number,
-    rego: string,
-    customer: string,
-    templateId: number|null,
-    type: string,
-    hours: number,
-    parts: [],
-    status: string,
-    notes: string
-}
-*/
 let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
 
 const MAX_BOOKINGS_PER_DAY = 10;
@@ -96,7 +62,7 @@ function openCalendar(){ showSection("calendarWrapper"); }
 
 
 /* =================================
-   CUSTOMERS
+   CUSTOMER + VEHICLE STRUCTURE
 ================================= */
 
 function addCustomer(){
@@ -107,13 +73,46 @@ function addCustomer(){
     const phone = prompt("Phone:");
     const email = prompt("Email:");
 
-    customers.push({name,phone,email});
+    customers.push({
+        id: Date.now(),
+        name,
+        phone,
+        email,
+        vehicles: []
+    });
+
     saveCustomers();
     renderCustomers();
 }
 
 function deleteCustomer(index){
     customers.splice(index,1);
+    saveCustomers();
+    renderCustomers();
+}
+
+function addVehicleToCustomer(customerId){
+
+    const customer = customers.find(c => c.id === customerId);
+    if(!customer) return;
+
+    const rego = prompt("Rego:");
+    if(!rego) return;
+
+    const make = prompt("Make:");
+    const model = prompt("Model:");
+    const year = prompt("Year:");
+    const notes = prompt("Notes:");
+
+    customer.vehicles.push({
+        id: Date.now(),
+        rego,
+        make,
+        model,
+        year,
+        notes
+    });
+
     saveCustomers();
     renderCustomers();
 }
@@ -126,20 +125,27 @@ function renderCustomers(){
     table.innerHTML = "";
 
     customers.forEach((c,i)=>{
+
         const row = document.createElement("tr");
+
         row.innerHTML = `
             <td>${c.name}</td>
             <td>${c.phone || ""}</td>
             <td>${c.email || ""}</td>
-            <td><button onclick="deleteCustomer(${i})">✕</button></td>
+            <td>${c.vehicles.length} vehicles</td>
+            <td>
+                <button onclick="addVehicleToCustomer(${c.id})">+ Vehicle</button>
+                <button onclick="deleteCustomer(${i})">✕</button>
+            </td>
         `;
+
         table.appendChild(row);
     });
 }
 
 
 /* =================================
-   JOB TYPES (UPGRADED STRUCTURE)
+   JOB TYPES
 ================================= */
 
 function addJobType(){
@@ -148,8 +154,7 @@ function addJobType(){
     if(!name) return;
 
     const description = prompt("Description:");
-    const defaultHoursInput = prompt("Default Labour Hours (e.g. 2.5):");
-    const defaultHours = parseFloat(defaultHoursInput) || 0;
+    const defaultHours = parseFloat(prompt("Default Labour Hours:")) || 0;
 
     let parts = [];
 
@@ -157,13 +162,9 @@ function addJobType(){
         const partName = prompt("Add Part Name (Cancel to stop):");
         if(!partName) break;
 
-        const qtyInput = prompt("Quantity:");
-        const quantity = parseFloat(qtyInput) || 1;
+        const quantity = parseFloat(prompt("Quantity:")) || 1;
 
-        parts.push({
-            partName,
-            quantity
-        });
+        parts.push({ partName, quantity });
     }
 
     jobTypes.push({
@@ -192,13 +193,14 @@ function renderJobTypes(){
     table.innerHTML = "";
 
     jobTypes.forEach((j,i)=>{
+
         const row = document.createElement("tr");
 
         row.innerHTML = `
             <td>${j.name}</td>
             <td>${j.description || ""}</td>
             <td>${j.defaultHours || 0} hrs</td>
-            <td>${j.parts ? j.parts.length : 0} parts</td>
+            <td>${j.parts.length} parts</td>
             <td><button onclick="deleteJobType(${i})">✕</button></td>
         `;
 
@@ -208,7 +210,25 @@ function renderJobTypes(){
 
 
 /* =================================
-   CALENDAR
+   VEHICLE LOOKUP
+================================= */
+
+function findVehicleByRego(rego){
+
+    for(const customer of customers){
+        for(const vehicle of customer.vehicles){
+            if(vehicle.rego.toLowerCase() === rego.toLowerCase()){
+                return { customer, vehicle };
+            }
+        }
+    }
+
+    return null;
+}
+
+
+/* =================================
+   CALENDAR (UNCHANGED STRUCTURE)
 ================================= */
 
 function changeYear(dir){
@@ -315,108 +335,38 @@ function openDayView(day){
     }
 
     renderJobs();
-    updateSlotCounter();
-}
-
-function updateSlotCounter(){
-
-    if(!selectedDateKey) return;
-
-    const count = jobs[selectedDateKey].length;
-    const remaining = MAX_BOOKINGS_PER_DAY - count;
-
-    document.getElementById("slotCounter").innerText =
-        remaining <= 0
-        ? " - DAY FULL"
-        : ` - ${remaining} Slots Available`;
-}
-
-function updateDashboardToday(){
-
-    const today = new Date();
-    const key = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-    const count = jobs[key] ? jobs[key].length : 0;
-
-    const el = document.getElementById("bookingCount");
-    if(el) el.innerText = count;
 }
 
 
 /* =================================
-   JOBS TABLE (UPGRADED BOOKINGS)
+   BOOKINGS NOW USE VEHICLES
 ================================= */
 
 function addVehicle(){
 
     if(!selectedDateKey) return;
 
-    if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
-        alert("Day is fully booked");
+    const rego = prompt("Enter Rego to Lookup:");
+
+    const result = findVehicleByRego(rego);
+
+    if(!result){
+        alert("Vehicle not found. Add it under Customers first.");
         return;
     }
 
-    const rego = prompt("Rego:");
-    if(!rego) return;
-
-    const customer = prompt("Customer:");
-    const status = prompt("Status:");
-    const notes = prompt("Notes:");
-
-    let templateId = null;
-    let type = "";
-    let hours = 0;
-    let parts = [];
-
-    if(jobTypes.length > 0){
-
-        let list = "Select Job Type:\n";
-
-        jobTypes.forEach((j,i)=>{
-            list += `${i+1}. ${j.name}\n`;
-        });
-
-        const choice = prompt(list);
-
-        if(choice && jobTypes[choice-1]){
-
-            const template = jobTypes[choice-1];
-
-            templateId = template.id;
-            type = template.name;
-
-            hours = template.defaultHours || 0;
-
-            parts = JSON.parse(JSON.stringify(template.parts || []));
-
-            const adjustHours = prompt(`Adjust Labour Hours (Default ${hours}):`);
-            if(adjustHours !== null){
-                hours = parseFloat(adjustHours) || hours;
-            }
-        }
-    }
+    const { customer, vehicle } = result;
 
     jobs[selectedDateKey].push({
         id: Date.now(),
-        rego,
-        customer,
-        templateId,
-        type,
-        hours,
-        parts,
-        status,
-        notes
+        customerId: customer.id,
+        vehicleId: vehicle.id,
+        rego: vehicle.rego,
+        customerName: customer.name
     });
 
     saveJobs();
     renderJobs();
-    updateSlotCounter();
-}
-
-function deleteJob(index){
-    jobs[selectedDateKey].splice(index,1);
-    saveJobs();
-    renderJobs();
-    updateSlotCounter();
 }
 
 function renderJobs(){
@@ -430,50 +380,25 @@ function renderJobs(){
 
     const dayJobs = jobs[selectedDateKey] || [];
 
-    for(let i=0;i<MAX_BOOKINGS_PER_DAY;i++){
+    dayJobs.forEach((job,i)=>{
 
         const row = document.createElement("tr");
 
-        if(dayJobs[i]){
-
-            const job = dayJobs[i];
-
-            row.innerHTML = `
-                <td>${i+1}</td>
-                <td>${job.rego}</td>
-                <td>${job.customer || ""}</td>
-                <td>${job.type || ""}</td>
-                <td>${job.hours || 0} hrs</td>
-                <td>${job.status || ""}</td>
-                <td>${job.notes || ""}</td>
-                <td><button onclick="deleteJob(${i})">✕</button></td>
-            `;
-
-        } else {
-
-            row.innerHTML = `
-                <td>${i+1}</td>
-                <td style="opacity:0.3;">Empty</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            `;
-
-            row.style.cursor = "pointer";
-            row.onclick = ()=> addVehicle();
-        }
+        row.innerHTML = `
+            <td>${i+1}</td>
+            <td>${job.rego}</td>
+            <td>${job.customerName}</td>
+            <td><button onclick="deleteJob(${i})">✕</button></td>
+        `;
 
         tableBody.appendChild(row);
-    }
+    });
 }
 
-function backToMonth(){
-    if(currentMonthIndex !== null){
-        showMonth(currentMonthIndex);
-    }
+function deleteJob(index){
+    jobs[selectedDateKey].splice(index,1);
+    saveJobs();
+    renderJobs();
 }
 
 
