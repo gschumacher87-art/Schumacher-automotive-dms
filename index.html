@@ -69,18 +69,30 @@
     <div id="jobsSection" style="display:none;">
         <h1>Job Types</h1>
 
-        <div style="margin-bottom:20px;">
-            <button class="primary" onclick="addJobType()">+ Add Job Type</button>
-        </div>
+        <div class="container" style="margin-bottom:20px;">
+    <h3>Add / Edit Service Template</h3>
+
+    <input type="hidden" id="serviceId">
+
+    <input type="text" id="serviceName" placeholder="Service Name">
+    <input type="text" id="serviceDescription" placeholder="Full Description">
+    <input type="number" id="serviceHours" placeholder="Default Hours">
+    <input type="number" id="serviceRate" placeholder="Default Labour Rate">
+
+    <button class="primary" onclick="saveServiceType()">Save Service</button>
+    <button onclick="clearServiceForm()">Clear</button>
+</div>
 
         <table>
             <thead>
-                <tr>
-                    <th>Service Name</th>
-                    <th>Description</th>
-                    <th></th>
-                </tr>
-            </thead>
+    <tr>
+        <th>Service Name</th>
+        <th>Description</th>
+        <th>Default Hours</th>
+        <th>Labour Rate</th>
+        <th></th>
+    </tr>
+</thead>
             <tbody id="jobTypesTableBody"></tbody>
         </table>
     </div>
