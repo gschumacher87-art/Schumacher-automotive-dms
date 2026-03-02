@@ -55,7 +55,7 @@ function saveJobs(){
 ================================= */
 
 function showSection(sectionId){
-    ["dashboardSection","customersSection","jobsSection","calendarWrapper"]
+    ["dashboardSection","customersSection","jobsSection","calendarWrapper","invoicesSection"]
         .forEach(id=>{
             const el = document.getElementById(id);
             if(el){
@@ -68,6 +68,7 @@ function openDashboard(){ showSection("dashboardSection"); }
 function openCustomers(){ showSection("customersSection"); renderCustomers(); }
 function openJobs(){ showSection("jobsSection"); renderJobTypes(); }
 function openCalendar(){ showSection("calendarWrapper"); }
+function openInvoices(){ showSection("invoicesSection"); }
 
 
 /* =================================
