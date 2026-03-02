@@ -665,6 +665,26 @@ function renderParts(){
         table.appendChild(row);
     });
 }
+function renderSavedJobs() {
+    const tableBody = document.getElementById("savedJobsTableBody");
+    tableBody.innerHTML = "";
+
+    jobs.forEach((job, index) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${job.customer || ""}</td>
+            <td>${job.vehicle || ""}</td>
+            <td>${job.jobType || ""}</td>
+            <td>${job.status || "Open"}</td>
+            <td>
+                <button onclick="deleteJob(${index})">Delete</button>
+            </td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+}
 /* =================================
    INIT
 ================================= */
