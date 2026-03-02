@@ -255,7 +255,7 @@ function deleteServiceType(index){
 
 function renderServiceTypes(){
 
-    const table = document.getElementById("serviceTypesTableBody");
+    const table = document.getElementById("jobTypesTableBody");
     if(!table) return;
 
     table.innerHTML = "";
