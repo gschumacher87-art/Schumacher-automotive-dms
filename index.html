@@ -12,15 +12,69 @@
 <div class="sidebar">
     <h2>Schumacher Automotive</h2>
     <ul>
-        <li onclick="openDashboard()">Dashboard</li>
-        <li onclick="openCustomers()">Customers</li>
-        <li onclick="openJobs()">Jobs</li>
-        <li onclick="openCalendar()">Calendar</li>
-        <li>Technicians</li>
-    </ul>
+    <li onclick="openDashboard()">Dashboard</li>
+    <li onclick="openCustomers()">Customers</li>
+    <li onclick="openJobs()">Jobs</li>
+    <li onclick="openCalendar()">Calendar</li>
+    <li onclick="openInvoices()">Invoices</li>
+    <li>Technicians</li>
+</ul>
 </div>
 
 <div class="main">
+
+    <!-- INVOICES SECTION -->
+<div id="invoicesSection" style="display:none;">
+    <h1>Invoices</h1>
+
+    <div class="container">
+        <h3>Customer Details</h3>
+        <input type="text" id="customerName" placeholder="Customer Name">
+        <input type="text" id="vehicle" placeholder="Vehicle">
+    </div>
+
+    <div class="container">
+        <h3>Add Item</h3>
+
+        <select id="partsLibrarySelect">
+            <option value="">Select From Parts Library</option>
+        </select>
+
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="itemDescription" placeholder="Description">
+            <input type="number" id="itemPrice" placeholder="Price">
+            <input type="number" id="itemQty" value="1">
+        </div>
+
+        <button class="primary" onclick="addInvoiceItem()">Add Item</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="invoiceItemsBody"></tbody>
+        </table>
+
+        <div style="text-align:right; margin-top:10px;">
+            Subtotal: $<span id="subtotal">0.00</span><br>
+            GST: $<span id="gst">0.00</span><br>
+            Total: $<span id="grandTotal">0.00</span>
+        </div>
+
+        <button class="primary" onclick="saveInvoice()">Save Invoice</button>
+    </div>
+
+    <div class="container">
+        <h3>Saved Invoices</h3>
+        <div id="invoiceList"></div>
+    </div>
+</div>
 
 <!-- DASHBOARD SECTION -->
 <div id="dashboardSection">
