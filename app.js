@@ -532,7 +532,68 @@ function backToMonth(){
     }
 }
 
+/* =================================
+   PARTS LIBRARY
+================================= */
 
+let parts = JSON.parse(localStorage.getItem("workshopParts")) || [];
+
+function saveParts(){
+    localStorage.setItem("workshopParts", JSON.stringify(parts));
+}
+
+function addPart(){
+
+    const number = document.getElementById("partNumber").value.trim();
+    const description = document.getElementById("partDescription").value.trim();
+    const price = parseFloat(document.getElementById("partPrice").value) || 0;
+
+    if(!number || !description){
+        alert("Part number and description required");
+        return;
+    }
+
+    parts.push({
+        id: Date.now(),
+        number,
+        description,
+        price
+    });
+
+    saveParts();
+    renderParts();
+
+    document.getElementById("partNumber").value = "";
+    document.getElementById("partDescription").value = "";
+    document.getElementById("partPrice").value = "";
+}
+
+function deletePart(index){
+    parts.splice(index,1);
+    saveParts();
+    renderParts();
+}
+
+function renderParts(){
+
+    const table = document.getElementById("partsTableBody");
+    if(!table) return;
+
+    table.innerHTML = "";
+
+    parts.forEach((p,i)=>{
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${p.number}</td>
+            <td>${p.description}</td>
+            <td>$${p.price.toFixed(2)}</td>
+            <td><button onclick="deletePart(${i})">✕</button></td>
+        `;
+
+        table.appendChild(row);
+    });
+}
 /* =================================
    INIT
 ================================= */
