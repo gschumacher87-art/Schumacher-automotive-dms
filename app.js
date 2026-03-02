@@ -55,7 +55,7 @@ function saveJobs(){
 ================================= */
 
 function showSection(sectionId){
-    ["dashboardSection","customersSection","jobsSection","calendarWrapper","invoicesSection"]
+    ["dashboardSection","customersSection","jobsSection","partsSection","calendarWrapper","invoicesSection"]
         .forEach(id=>{
             const el = document.getElementById(id);
             if(el){
@@ -64,11 +64,32 @@ function showSection(sectionId){
         });
 }
 
-function openDashboard(){ showSection("dashboardSection"); }
-function openCustomers(){ showSection("customersSection"); renderCustomers(); }
-function openJobs(){ showSection("jobsSection"); renderJobTypes(); }
-function openCalendar(){ showSection("calendarWrapper"); }
-function openInvoices(){ showSection("invoicesSection"); }
+function openDashboard(){
+    showSection("dashboardSection");
+}
+
+function openCustomers(){
+    showSection("customersSection");
+    renderCustomers();
+}
+
+function openJobs(){
+    showSection("jobsSection");
+    renderJobTypes();
+}
+
+function openParts(){
+    showSection("partsSection");
+    renderParts();
+}
+
+function openCalendar(){
+    showSection("calendarWrapper");
+}
+
+function openInvoices(){
+    showSection("invoicesSection");
+}
 
 
 /* =================================
