@@ -1,7 +1,7 @@
 /* =================================
    GLOBAL STATE
 ================================= */
-
+let editingServiceIndex = null;
 let currentYear = new Date().getFullYear();
 let selectedDateKey = null;
 let currentMonthIndex = null;
@@ -247,20 +247,41 @@ function renderServiceTypes(){
 
     serviceTypes.forEach((s,i)=>{
 
-        const row = document.createElement("tr");
+    const row = document.createElement("tr");
 
-        row.innerHTML = `
-            <td>${s.name}</td>
-            <td>${s.description}</td>
-            <td>${s.defaultHours} hrs</td>
-            <td>$${s.defaultRate.toFixed(2)}</td>
-            <td><button onclick="deleteServiceType(${i})">✕</button></td>
-        `;
+    row.innerHTML = `
+        <td>${s.name}</td>
+        <td>${s.description}</td>
+        <td>${s.defaultHours} hrs</td>
+        <td>$${s.defaultRate.toFixed(2)}</td>
+        <td>
+            <button onclick="deleteServiceType(${i}); event.stopPropagation();">
+                ✕
+            </button>
+        </td>
+    `;
 
-        table.appendChild(row);
-    });
+    row.style.cursor = "pointer";
+
+    row.onclick = function(){
+        loadServiceForEdit(i);
+    };
+
+    table.appendChild(row);
+});
 }
+function loadServiceForEdit(index){
 
+    const s = serviceTypes[index];
+    if(!s) return;
+
+    document.getElementById("serviceName").value = s.name;
+    document.getElementById("serviceDescription").value = s.description;
+    document.getElementById("serviceHours").value = s.defaultHours;
+    document.getElementById("serviceRate").value = s.defaultRate;
+
+    editingServiceIndex = index;
+}
 function clearServiceForm(){
     document.getElementById("serviceName").value = "";
     document.getElementById("serviceDescription").value = "";
