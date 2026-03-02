@@ -12,199 +12,221 @@
 <div class="sidebar">
     <h2>Schumacher Automotive</h2>
     <ul>
-    <li onclick="openDashboard()">Dashboard</li>
-    <li onclick="openCustomers()">Customers</li>
-    <li onclick="openJobs()">Jobs</li>
-    <li onclick="openCalendar()">Calendar</li>
-    <li onclick="openInvoices()">Invoices</li>
-    <li>Technicians</li>
-</ul>
+        <li onclick="openDashboard()">Dashboard</li>
+        <li onclick="openCustomers()">Customers</li>
+        <li onclick="openJobs()">Jobs</li>
+        <li onclick="openCalendar()">Calendar</li>
+        <li onclick="openInvoices()">Invoices</li>
+        <li onclick="openParts()">Parts</li>
+        <li>Technicians</li>
+    </ul>
 </div>
 
 <div class="main">
 
-    <!-- INVOICES SECTION -->
-<div id="invoicesSection" style="display:none;">
-    <h1>Invoices</h1>
+    <!-- DASHBOARD SECTION -->
+    <div id="dashboardSection">
+        <h1>Dashboard</h1>
 
-    <div class="container">
-        <h3>Customer Details</h3>
-        <input type="text" id="customerName" placeholder="Customer Name">
-        <input type="text" id="vehicle" placeholder="Vehicle">
+        <div class="cards">
+            <div class="card" onclick="openCalendar()">
+                <h3>Bookings Today</h3>
+                <p id="bookingCount">0</p>
+            </div>
+            <div class="card">
+                <h3>Vehicles in Workshop</h3>
+                <p>0</p>
+            </div>
+            <div class="card">
+                <h3>Hours Booked Today</h3>
+                <p>0</p>
+            </div>
+        </div>
     </div>
 
-    <div class="container">
-        <h3>Add Item</h3>
+    <!-- CUSTOMERS SECTION -->
+    <div id="customersSection" style="display:none;">
+        <h1>Customers</h1>
 
-        <select id="partsLibrarySelect">
-            <option value="">Select From Parts Library</option>
-        </select>
-
-        <div style="display:flex; gap:10px;">
-            <input type="text" id="itemDescription" placeholder="Description">
-            <input type="number" id="itemPrice" placeholder="Price">
-            <input type="number" id="itemQty" value="1">
+        <div style="margin-bottom:20px;">
+            <button class="primary" onclick="addCustomer()">+ Add Customer</button>
         </div>
-
-        <button class="primary" onclick="addInvoiceItem()">Add Item</button>
 
         <table>
             <thead>
                 <tr>
-                    <th>Description</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                    <th>Total</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
                     <th></th>
                 </tr>
             </thead>
-            <tbody id="invoiceItemsBody"></tbody>
+            <tbody id="customerTableBody"></tbody>
         </table>
+    </div>
 
-        <div style="text-align:right; margin-top:10px;">
-            Subtotal: $<span id="subtotal">0.00</span><br>
-            GST: $<span id="gst">0.00</span><br>
-            Total: $<span id="grandTotal">0.00</span>
+    <!-- JOB TYPES SECTION -->
+    <div id="jobsSection" style="display:none;">
+        <h1>Job Types</h1>
+
+        <div style="margin-bottom:20px;">
+            <button class="primary" onclick="addJobType()">+ Add Job Type</button>
         </div>
 
-        <button class="primary" onclick="saveInvoice()">Save Invoice</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Description</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="jobTypesTableBody"></tbody>
+        </table>
     </div>
 
-    <div class="container">
-        <h3>Saved Invoices</h3>
-        <div id="invoiceList"></div>
-    </div>
-</div>
+    <!-- PARTS SECTION -->
+    <div id="partsSection" style="display:none;">
+        <h1>Parts Library</h1>
 
-<!-- DASHBOARD SECTION -->
-<div id="dashboardSection">
-    <h1>Dashboard</h1>
-
-    <div class="cards">
-        <div class="card" onclick="openCalendar()">
-            <h3>Bookings Today</h3>
-            <p id="bookingCount">0</p>
+        <div class="container">
+            <h3>Add New Part</h3>
+            <input type="text" id="partNumber" placeholder="Part Number">
+            <input type="text" id="partDescription" placeholder="Description">
+            <input type="number" id="partPrice" placeholder="Default Price">
+            <button class="primary" onclick="addPart()">Add Part</button>
         </div>
-        <div class="card">
-            <h3>Vehicles in Workshop</h3>
-            <p>0</p>
+
+        <div class="container">
+            <h3>Parts List</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Part #</th>
+                        <th>Description</th>
+                        <th>Default Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="partsTableBody"></tbody>
+            </table>
         </div>
-        <div class="card">
-            <h3>Hours Booked Today</h3>
-            <p>0</p>
+    </div>
+
+    <!-- INVOICES SECTION -->
+    <div id="invoicesSection" style="display:none;">
+        <h1>Invoices</h1>
+
+        <div class="container">
+            <h3>Customer Details</h3>
+            <input type="text" id="customerName" placeholder="Customer Name">
+            <input type="text" id="vehicle" placeholder="Vehicle">
+        </div>
+
+        <div class="container">
+            <h3>Add Item</h3>
+
+            <select id="partsLibrarySelect">
+                <option value="">Select From Parts Library</option>
+            </select>
+
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="itemDescription" placeholder="Description">
+                <input type="number" id="itemPrice" placeholder="Price">
+                <input type="number" id="itemQty" value="1">
+            </div>
+
+            <button class="primary" onclick="addInvoiceItem()">Add Item</button>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceItemsBody"></tbody>
+            </table>
+
+            <div style="text-align:right; margin-top:10px;">
+                Subtotal: $<span id="subtotal">0.00</span><br>
+                GST: $<span id="gst">0.00</span><br>
+                Total: $<span id="grandTotal">0.00</span>
+            </div>
+
+            <button class="primary" onclick="saveInvoice()">Save Invoice</button>
+        </div>
+
+        <div class="container">
+            <h3>Saved Invoices</h3>
+            <div id="invoiceList"></div>
         </div>
     </div>
-</div>
 
-<!-- CUSTOMERS SECTION -->
-<div id="customersSection" style="display:none;">
-    <h1>Customers</h1>
-
-    <div style="margin-bottom:20px;">
-        <button class="primary" onclick="addCustomer()">+ Add Customer</button>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="customerTableBody"></tbody>
-    </table>
-</div>
-
-<!-- JOB TYPES SECTION -->
-<div id="jobsSection" style="display:none;">
-    <h1>Job Types</h1>
-
-    <div style="margin-bottom:20px;">
-        <button class="primary" onclick="addJobType()">+ Add Job Type</button>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Service Name</th>
-                <th>Description</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="jobTypesTableBody"></tbody>
-    </table>
-</div>
-<!-- CALENDAR SECTION -->
-<div id="calendarWrapper" class="calendar-wrapper">
-
-    <div class="day-header">
-        <h2>
-            Bookings -
-            <button onclick="changeYear(-1)">&lt;&lt;</button>
-            <span id="yearDisplay"></span>
-            <button onclick="changeYear(1)">&gt;&gt;</button>
-        </h2>
-        <button class="danger" onclick="closeCalendar()">✕ Close</button>
-    </div>
-
-    <div id="calendarGrid" class="month-grid"></div>
-    <div id="monthView"></div>
-
-    <div id="dayPanel" class="day-panel">
+    <!-- CALENDAR SECTION -->
+    <div id="calendarWrapper" class="calendar-wrapper" style="display:none;">
 
         <div class="day-header">
             <h2>
-    <button onclick="changeDay(-1)">&lt;&lt;</button>
-    <span id="dayTitle"></span>
-    <button onclick="changeDay(1)">&gt;&gt;</button>
-    <span id="slotCounter" class="slots"></span>
-</h2>
-            <button onclick="backToMonth()">← Back</button>
+                Bookings -
+                <button onclick="changeYear(-1)">&lt;&lt;</button>
+                <span id="yearDisplay"></span>
+                <button onclick="changeYear(1)">&gt;&gt;</button>
+            </h2>
+            <button class="danger" onclick="closeCalendar()">✕ Close</button>
         </div>
 
-        <button class="primary" onclick="addVehicle()">+ Add Vehicle</button>
-        <!-- BOOKINGS SPREADSHEET -->
-<div class="bookings-wrapper">
+        <div id="calendarGrid" class="month-grid"></div>
+        <div id="monthView"></div>
 
-    <table id="bookingsTable" class="bookings-table">
-        <thead>
-            <tr>
-                <th>Slot</th>
-                <th>Rego</th>
-                <th>Customer</th>
-                <th>Job Type</th>
-                <th>Status</th>
-                <th>Notes</th>
-            </tr>
-        </thead>
-        <tbody id="bookingsBody">
+        <div id="dayPanel" class="day-panel">
 
-            <tr><td>1</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>2</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>3</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>4</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>5</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>6</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>7</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>8</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>9</td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>10</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <div class="day-header">
+                <h2>
+                    <button onclick="changeDay(-1)">&lt;&lt;</button>
+                    <span id="dayTitle"></span>
+                    <button onclick="changeDay(1)">&gt;&gt;</button>
+                    <span id="slotCounter" class="slots"></span>
+                </h2>
+                <button onclick="backToMonth()">← Back</button>
+            </div>
 
-        </tbody>
-    </table>
+            <button class="primary" onclick="addVehicle()">+ Add Vehicle</button>
 
-</div>
+            <div class="bookings-wrapper">
+                <table id="bookingsTable" class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Slot</th>
+                            <th>Rego</th>
+                            <th>Customer</th>
+                            <th>Job Type</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsBody">
+                        <tr><td>1</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>2</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>3</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>4</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>5</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>6</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>7</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>8</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>9</td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td>10</td><td></td><td></td><td></td><td></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
 
-        
-
+        </div>
     </div>
 
-</div>
-
-</div>
-
+</div> <!-- END .main -->
 
 <script src="app.js"></script>
 </body>
