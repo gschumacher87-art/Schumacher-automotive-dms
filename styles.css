@@ -217,3 +217,12 @@ th{
     margin-top: 15px;
     text-align: right;
 }
+/* LARGE DESCRIPTION BOX */
+
+.large-description {
+    flex: 1;
+    height: 300px;
+    padding: 8px;
+    resize: vertical;
+    overflow-y: auto;
+}
