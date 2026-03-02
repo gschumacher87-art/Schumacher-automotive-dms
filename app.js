@@ -285,6 +285,32 @@ function renderServiceTypes(){
     table.appendChild(row);
 });
 }
+function renderSavedJobsTable(){
+
+    const table = document.getElementById("savedJobsTableBody");
+    if(!table) return;
+
+    table.innerHTML = "";
+
+    Object.keys(jobs).forEach(dateKey => {
+
+        jobs[dateKey].forEach((job, index) => {
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${dateKey}</td>
+                <td>${job.rego}</td>
+                <td>${job.customer}</td>
+                <td>${job.type}</td>
+                <td>${job.hours} hrs</td>
+                <td>${job.status}</td>
+            `;
+
+            table.appendChild(row);
+        });
+    });
+}
 function loadServiceForEdit(index){
 
     const s = serviceTypes[index];
