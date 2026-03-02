@@ -219,19 +219,34 @@ function addServiceType(){
         return;
     }
 
-    serviceTypes.push({
-        id: Date.now(),
-        name,
-        description,
-        defaultHours: hours,
-        defaultRate: rate
-    });
+    if(editingServiceIndex !== null){
+
+        serviceTypes[editingServiceIndex] = {
+            ...serviceTypes[editingServiceIndex],
+            name,
+            description,
+            defaultHours: hours,
+            defaultRate: rate
+        };
+
+        editingServiceIndex = null;
+
+    } else {
+
+        serviceTypes.push({
+            id: Date.now(),
+            name,
+            description,
+            defaultHours: hours,
+            defaultRate: rate
+        });
+
+    }
 
     saveServiceTypes();
     renderServiceTypes();
     clearServiceForm();
 }
-
 function deleteServiceType(index){
     serviceTypes.splice(index,1);
     saveServiceTypes();
