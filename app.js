@@ -302,6 +302,7 @@ function clearServiceForm(){
     document.getElementById("serviceDescription").value = "";
     document.getElementById("serviceHours").value = "";
     document.getElementById("serviceRate").value = "";
+    editingServiceIndex = null;
 }
 
 
