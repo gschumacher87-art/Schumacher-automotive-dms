@@ -7,7 +7,7 @@ let selectedDateKey = null;
 let currentMonthIndex = null;
 
 let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
-let jobTypes = JSON.parse(localStorage.getItem("workshopJobTypes")) || [];
+let serviceTypes = JSON.parse(localStorage.getItem("workshopServiceTypes")) || [];
 let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
 
 const MAX_BOOKINGS_PER_DAY = 10;
@@ -41,8 +41,8 @@ function saveCustomers(){
     localStorage.setItem("workshopCustomers", JSON.stringify(customers));
 }
 
-function saveJobTypes(){
-    localStorage.setItem("workshopJobTypes", JSON.stringify(jobTypes));
+function saveServiceTypes(){
+    localStorage.setItem("workshopServiceTypes", JSON.stringify(serviceTypes));
 }
 
 function saveJobs(){
@@ -75,7 +75,7 @@ function openCustomers(){
 
 function openJobs(){
     showSection("jobsSection");
-    renderJobTypes();
+    renderServiceTypes();
 }
 
 function openParts(){
@@ -204,63 +204,68 @@ function renderCustomers(searchTerm=""){
 
 
 /* =================================
-   JOB TYPES
+   SERVICE TYPES (MASTER DATABASE)
 ================================= */
 
-function addJobType(){
+function addServiceType(){
 
-    const name = prompt("Service Name:");
-    if(!name) return;
+    const name = document.getElementById("serviceName").value.trim();
+    const description = document.getElementById("serviceDescription").value.trim();
+    const hours = parseFloat(document.getElementById("serviceHours").value) || 0;
+    const rate = parseFloat(document.getElementById("serviceRate").value) || 0;
 
-    const description = prompt("Description:");
-    const defaultHours = parseFloat(prompt("Default Labour Hours:")) || 0;
-
-    let parts = [];
-
-    while(true){
-        const partName = prompt("Add Part Name (Cancel to stop):");
-        if(!partName) break;
-
-        const quantity = parseFloat(prompt("Quantity:")) || 1;
-        parts.push({partName,quantity});
+    if(!name){
+        alert("Service name required");
+        return;
     }
 
-    jobTypes.push({
+    serviceTypes.push({
         id: Date.now(),
         name,
         description,
-        defaultHours,
-        parts
+        defaultHours: hours,
+        defaultRate: rate
     });
 
-    saveJobTypes();
-    renderJobTypes();
+    saveServiceTypes();
+    renderServiceTypes();
+    clearServiceForm();
 }
 
-function deleteJobType(index){
-    jobTypes.splice(index,1);
-    saveJobTypes();
-    renderJobTypes();
+function deleteServiceType(index){
+    serviceTypes.splice(index,1);
+    saveServiceTypes();
+    renderServiceTypes();
 }
 
-function renderJobTypes(){
+function renderServiceTypes(){
 
-    const table = document.getElementById("jobTypesTableBody");
+    const table = document.getElementById("serviceTypesTableBody");
     if(!table) return;
 
     table.innerHTML = "";
 
-    jobTypes.forEach((j,i)=>{
+    serviceTypes.forEach((s,i)=>{
+
         const row = document.createElement("tr");
+
         row.innerHTML = `
-            <td>${j.name}</td>
-            <td>${j.description}</td>
-            <td>${j.defaultHours} hrs</td>
-            <td>${j.parts.length}</td>
-            <td><button onclick="deleteJobType(${i})">✕</button></td>
+            <td>${s.name}</td>
+            <td>${s.description}</td>
+            <td>${s.defaultHours} hrs</td>
+            <td>$${s.defaultRate.toFixed(2)}</td>
+            <td><button onclick="deleteServiceType(${i})">✕</button></td>
         `;
+
         table.appendChild(row);
     });
+}
+
+function clearServiceForm(){
+    document.getElementById("serviceName").value = "";
+    document.getElementById("serviceDescription").value = "";
+    document.getElementById("serviceHours").value = "";
+    document.getElementById("serviceRate").value = "";
 }
 
 
@@ -410,10 +415,15 @@ function updateDashboardToday(){
 function addVehicle(){
 
     if(!selectedDateKey) return;
-    if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
-        alert("Day is fully booked");
-        return;
-    }
+
+if(!jobs[selectedDateKey]){
+    jobs[selectedDateKey] = [];
+}
+
+if(jobs[selectedDateKey].length >= MAX_BOOKINGS_PER_DAY){
+    alert("Day is fully booked");
+    return;
+}
 
     const rego = prompt("Rego:");
     if(!rego) return;
@@ -425,26 +435,25 @@ function addVehicle(){
     let templateId = null;
     let type = "";
     let hours = 0;
-    let parts = [];
 
-    if(jobTypes.length > 0){
+    if(serviceTypes.length > 0){
 
-        let list = "Select Job Type:\n";
+       let list = "Select Service Type:\n";
 
-        jobTypes.forEach((j,i)=>{
-            list += `${i+1}. ${j.name}\n`;
-        });
+serviceTypes.forEach((s,i)=>{
+    list += `${i+1}. ${s.name}\n`;
+});
+
 
         const choice = prompt(list);
 
-        if(choice && jobTypes[choice-1]){
+        if(choice && serviceTypes[choice-1]){
 
-            const template = jobTypes[choice-1];
+            const template = serviceTypes[choice-1];
 
             templateId = template.id;
             type = template.name;
             hours = template.defaultHours || 0;
-            parts = JSON.parse(JSON.stringify(template.parts || []));
 
             const adjust =
                 prompt(`Adjust Labour Hours (Default ${hours}):`);
@@ -462,7 +471,6 @@ function addVehicle(){
         templateId,
         type,
         hours,
-        parts,
         status,
         notes
     });
