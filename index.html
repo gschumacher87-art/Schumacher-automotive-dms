@@ -74,13 +74,30 @@
 
     <input type="hidden" id="serviceId">
 
-    <input type="text" id="serviceName" placeholder="Service Name">
-    <input type="text" id="serviceDescription" placeholder="Full Description">
-    <input type="number" id="serviceHours" placeholder="Default Hours">
-    <input type="number" id="serviceRate" placeholder="Default Labour Rate">
+    <div class="form-row">
+        <label>Service Name</label>
+        <input type="text" id="serviceName">
+    </div>
 
-    <button class="primary" onclick="saveServiceType()">Save Service</button>
-    <button onclick="clearServiceForm()">Clear</button>
+    <div class="form-row">
+        <label>Full Description</label>
+        <input type="text" id="serviceDescription">
+    </div>
+
+    <div class="form-row">
+        <label>Default Hours</label>
+        <input type="number" id="serviceHours">
+    </div>
+
+    <div class="form-row">
+        <label>Default Labour Rate</label>
+        <input type="number" id="serviceRate">
+    </div>
+
+    <div class="form-actions">
+        <button class="primary" onclick="saveServiceType()">Save Service</button>
+        <button onclick="clearServiceForm()">Clear</button>
+    </div>
 </div>
 
         <table>
