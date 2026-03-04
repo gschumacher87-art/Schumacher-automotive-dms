@@ -119,57 +119,117 @@ function openInvoices(){
 }
 
 /* =================================
-   CUSTOMERS DATABASE
+   CUSTOMERS DATABASE (UPGRADED)
 ================================= */
 
-function addCustomer(){
+let editingCustomerIndex = null;
 
-    const name = prompt("Customer Name:");
-    if(!name) return;
+/* SAVE */
+function saveCustomers(){
+    localStorage.setItem("workshopCustomers", JSON.stringify(customers));
+}
 
-    const phone = prompt("Phone:");
-    const email = prompt("Email:");
+/* ADD OR UPDATE CUSTOMER */
+function saveCustomer(){
 
-    customers.push({
-        id: Date.now(),
-        name,
-        phone,
-        email,
-        vehicles: []
-    });
+    const firstName = document.getElementById("customerFirstName").value.trim();
+    const lastName  = document.getElementById("customerLastName").value.trim();
+    const phone     = document.getElementById("customerPhone").value.trim();
+    const email     = document.getElementById("customerEmail").value.trim();
+
+    if(!firstName){
+        alert("First name required");
+        return;
+    }
+
+    if(editingCustomerIndex !== null){
+
+        customers[editingCustomerIndex].firstName = firstName;
+        customers[editingCustomerIndex].lastName  = lastName;
+        customers[editingCustomerIndex].phone     = phone;
+        customers[editingCustomerIndex].email     = email;
+
+        editingCustomerIndex = null;
+
+    } else {
+
+        customers.push({
+            id: Date.now(),
+            firstName,
+            lastName,
+            phone,
+            email,
+            vehicles: []
+        });
+
+    }
 
     saveCustomers();
     renderCustomers();
+    clearCustomerForm();
 }
 
+/* DELETE */
 function deleteCustomer(index){
+    if(!confirm("Delete customer?")) return;
+
     customers.splice(index,1);
     saveCustomers();
     renderCustomers();
 }
 
+/* EDIT */
+function editCustomer(index){
+
+    const c = customers[index];
+
+    document.getElementById("customerFirstName").value = c.firstName || "";
+    document.getElementById("customerLastName").value  = c.lastName || "";
+    document.getElementById("customerPhone").value     = c.phone || "";
+    document.getElementById("customerEmail").value     = c.email || "";
+
+    editingCustomerIndex = index;
+}
+
+/* CLEAR FORM */
+function clearCustomerForm(){
+    document.getElementById("customerFirstName").value = "";
+    document.getElementById("customerLastName").value  = "";
+    document.getElementById("customerPhone").value     = "";
+    document.getElementById("customerEmail").value     = "";
+    editingCustomerIndex = null;
+}
+
+/* ADD VEHICLE TO SELECTED CUSTOMER */
 function addVehicleToCustomer(index){
 
-    const rego = prompt("Rego:");
-    if(!rego) return;
+    const rego  = document.getElementById("vehicleRego").value.trim();
+    const make  = document.getElementById("vehicleMake").value.trim();
+    const model = document.getElementById("vehicleModel").value.trim();
+    const year  = document.getElementById("vehicleYear").value.trim();
 
-    const make = prompt("Make:");
-    const model = prompt("Model:");
-    const year = prompt("Year:");
-    const notes = prompt("Notes:");
+    if(!rego){
+        alert("Rego required");
+        return;
+    }
 
     customers[index].vehicles.push({
         rego,
         make,
         model,
-        year,
-        notes
+        year
     });
 
     saveCustomers();
     renderCustomers();
+
+    document.getElementById("vehicleRego").value = "";
+    document.getElementById("vehicleMake").value = "";
+    document.getElementById("vehicleModel").value = "";
+    document.getElementById("vehicleYear").value = "";
 }
 
+/* SEARCH */
 function searchCustomers(){
 
     const input = document.getElementById("customerSearchInput");
@@ -179,6 +239,7 @@ function searchCustomers(){
     renderCustomers(term);
 }
 
+/* RENDER */
 function renderCustomers(searchTerm=""){
 
     const table = document.getElementById("customerTableBody");
@@ -188,22 +249,35 @@ function renderCustomers(searchTerm=""){
 
     customers.forEach((c,i)=>{
 
+        /* Migrate old records safely */
+        if(!c.firstName && c.name){
+            const parts = c.name.split(" ");
+            c.firstName = parts[0];
+            c.lastName = parts.slice(1).join(" ");
+        }
+
+        const fullName = (c.firstName + " " + (c.lastName || "")).toLowerCase();
+
         const match =
-            c.name.toLowerCase().includes(searchTerm) ||
-            c.phone.includes(searchTerm) ||
-            c.email.toLowerCase().includes(searchTerm) ||
-            c.vehicles.some(v => v.rego.toLowerCase().includes(searchTerm));
+            fullName.includes(searchTerm) ||
+            (c.phone || "").toLowerCase().includes(searchTerm) ||
+            (c.email || "").toLowerCase().includes(searchTerm) ||
+            c.vehicles.some(v =>
+                (v.rego || "").toLowerCase().includes(searchTerm)
+            );
 
         if(searchTerm && !match) return;
 
         const row = document.createElement("tr");
 
         row.innerHTML = `
-            <td>${c.name}</td>
-            <td>${c.phone}</td>
-            <td>${c.email}</td>
+            <td>${c.firstName || ""}</td>
+            <td>${c.lastName || ""}</td>
+            <td>${c.phone || ""}</td>
+            <td>${c.email || ""}</td>
             <td>${c.vehicles.length}</td>
             <td>
+                <button onclick="editCustomer(${i})">Edit</button>
                 <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
                 <button onclick="deleteCustomer(${i})">✕</button>
             </td>
@@ -211,7 +285,9 @@ function renderCustomers(searchTerm=""){
 
         table.appendChild(row);
 
+        /* Render vehicles under customer */
         c.vehicles.forEach(v=>{
+
             const vehicleRow = document.createElement("tr");
             vehicleRow.style.background = "#f3f3f3";
 
@@ -220,11 +296,13 @@ function renderCustomers(searchTerm=""){
                 <td>${v.make}</td>
                 <td>${v.model}</td>
                 <td>${v.year}</td>
-                <td>${v.notes}</td>
+                <td></td>
+                <td></td>
             `;
 
             table.appendChild(vehicleRow);
         });
+
     });
 }
 
