@@ -18,7 +18,7 @@
         <li onclick="openCalendar()">Calendar</li>
         <li onclick="openInvoices()">Invoices</li>
         <li onclick="openParts()">Parts</li>
-        <li onclick="openQuote()">Quote</li>
+        <li onclick="openQuotes()">Quote</li>
         <li>Technicians</li>
     </ul>
 </div>
@@ -198,6 +198,28 @@
             <div id="invoiceList"></div>
         </div>
     </div>
+
+    <!-- QUOTES SECTION -->
+<div id="quotesSection" style="display:none;">
+    <h1>Quotes</h1>
+
+    <div style="margin-bottom:20px;">
+        <button class="primary" onclick="createQuote()">+ Create Quote</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Quote #</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="quotesTableBody"></tbody>
+    </table>
+</div>
 
     <!-- CALENDAR SECTION -->
     <div id="calendarWrapper" class="calendar-wrapper" style="display:none;">
