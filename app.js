@@ -680,9 +680,6 @@ function renderParts(){
     });
 }
 
-        tableBody.appendChild(row);
-    });
-}
 /* =================================
    QUOTES
 ================================= */
