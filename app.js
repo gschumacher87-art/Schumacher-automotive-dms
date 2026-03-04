@@ -9,6 +9,17 @@ let currentMonthIndex = null;
 let customers = JSON.parse(localStorage.getItem("workshopCustomers")) || [];
 let serviceTypes = JSON.parse(localStorage.getItem("workshopServiceTypes")) || [];
 let jobs = JSON.parse(localStorage.getItem("workshopJobs")) || {};
+let quotes = JSON.parse(localStorage.getItem("workshopQuotes")) || [];
+
+/* ===== QUOTE NUMBER COUNTER ===== */
+let nextQuoteNumber = parseInt(localStorage.getItem("nextQuoteNumber")) || 1;
+
+function getNextQuoteNumber(){
+    const number = nextQuoteNumber;
+    nextQuoteNumber++;
+    localStorage.setItem("nextQuoteNumber", nextQuoteNumber);
+    return number;
+}
 
 const MAX_BOOKINGS_PER_DAY = 10;
 
@@ -49,6 +60,9 @@ function saveJobs(){
     localStorage.setItem("workshopJobs", JSON.stringify(jobs));
 }
 
+function saveQuotes(){
+    localStorage.setItem("workshopQuotes", JSON.stringify(quotes));
+}
 
 /* =================================
    SECTION SWITCHING
@@ -683,6 +697,76 @@ function renderSavedJobs() {
         `;
 
         tableBody.appendChild(row);
+    });
+}
+/* =================================
+   QUOTES
+================================= */
+
+function createQuote(){
+
+    const quote = {
+        id: Date.now(),
+        quoteNumber: getNextQuoteNumber(),
+        customerId: null,
+        date: new Date().toISOString(),
+        items: [],
+        labourTotal: 0,
+        partsTotal: 0,
+        total: 0,
+        status: "Draft"
+    };
+
+    quotes.push(quote);
+    saveQuotes();
+    renderQuotes();
+}
+
+function convertQuoteToInvoice(index){
+
+    const quote = quotes[index];
+    if(!quote) return;
+
+    // ⚠️ This assumes invoices array + getNextInvoiceNumber() exist
+    const invoice = {
+        ...quote,
+        invoiceNumber: getNextInvoiceNumber(),
+        status: "Unpaid"
+    };
+
+    invoices.push(invoice);
+    saveInvoices();
+
+    quote.status = "Converted";
+    saveQuotes();
+
+    renderQuotes();
+}
+
+function renderQuotes(){
+
+    const table = document.getElementById("quotesTableBody");
+    if(!table) return;
+
+    table.innerHTML = "";
+
+    quotes.forEach((q,i)=>{
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>Q${q.quoteNumber}</td>
+            <td>${new Date(q.date).toLocaleDateString('en-AU')}</td>
+            <td>$${q.total.toFixed(2)}</td>
+            <td>${q.status}</td>
+            <td>
+                <button onclick="convertQuoteToInvoice(${i})">
+                    Convert
+                </button>
+            </td>
+        `;
+
+        table.appendChild(row);
     });
 }
 /* =================================
