@@ -679,22 +679,6 @@ function renderParts(){
         table.appendChild(row);
     });
 }
-function renderSavedJobs() {
-    const tableBody = document.getElementById("savedJobsTableBody");
-    tableBody.innerHTML = "";
-
-    jobs.forEach((job, index) => {
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${job.customer || ""}</td>
-            <td>${job.vehicle || ""}</td>
-            <td>${job.jobType || ""}</td>
-            <td>${job.status || "Open"}</td>
-            <td>
-                <button onclick="deleteJob(${index})">Delete</button>
-            </td>
-        `;
 
         tableBody.appendChild(row);
     });
@@ -764,6 +748,47 @@ function renderQuotes(){
                     Convert
                 </button>
             </td>
+        `;
+
+        table.appendChild(row);
+    });
+}
+/* =================================
+   INVOICES
+================================= */
+
+let invoices = JSON.parse(localStorage.getItem("workshopInvoices")) || [];
+
+let nextInvoiceNumber =
+    parseInt(localStorage.getItem("nextInvoiceNumber")) || 1;
+
+function getNextInvoiceNumber(){
+    const number = nextInvoiceNumber;
+    nextInvoiceNumber++;
+    localStorage.setItem("nextInvoiceNumber", nextInvoiceNumber);
+    return number;
+}
+
+function saveInvoices(){
+    localStorage.setItem("workshopInvoices", JSON.stringify(invoices));
+}
+
+function renderInvoices(){
+
+    const table = document.getElementById("invoicesTableBody");
+    if(!table) return;
+
+    table.innerHTML = "";
+
+    invoices.forEach((inv)=>{
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>INV${inv.invoiceNumber}</td>
+            <td>${new Date(inv.date).toLocaleDateString('en-AU')}</td>
+            <td>$${inv.total.toFixed(2)}</td>
+            <td>${inv.status}</td>
         `;
 
         table.appendChild(row);
