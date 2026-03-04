@@ -69,13 +69,20 @@ function saveQuotes(){
 ================================= */
 
 function showSection(sectionId){
-    ["dashboardSection","customersSection","jobsSection","partsSection","calendarWrapper","invoicesSection"]
-        .forEach(id=>{
-            const el = document.getElementById(id);
-            if(el){
-                el.style.display = id === sectionId ? "block" : "none";
-            }
-        });
+    [
+        "dashboardSection",
+        "customersSection",
+        "jobsSection",
+        "partsSection",
+        "calendarWrapper",
+        "quotesSection",
+        "invoicesSection"
+    ].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){
+            el.style.display = id === sectionId ? "block" : "none";
+        }
+    });
 }
 
 function openDashboard(){
@@ -101,10 +108,15 @@ function openCalendar(){
     showSection("calendarWrapper");
 }
 
-function openInvoices(){
-    showSection("invoicesSection");
+function openQuotes(){
+    showSection("quotesSection");
+    renderQuotes();
 }
 
+function openInvoices(){
+    showSection("invoicesSection");
+    renderInvoices();
+}
 
 /* =================================
    CUSTOMERS DATABASE
