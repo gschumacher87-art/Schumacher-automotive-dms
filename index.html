@@ -47,87 +47,92 @@
 
     <!-- CUSTOMERS SECTION -->
 <div id="customersSection" style="display:none;">
-    <h1>Customers</h1>
 
-    <!-- ADD / EDIT CUSTOMER FORM -->
-    <div class="container" style="margin-bottom:20px;">
-        <h3>Add / Edit Customer</h3>
+<h1>Customers</h1>
 
-        <input type="hidden" id="customerId">
+<!-- CUSTOMER SEARCH -->
+<div style="margin-bottom:15px;">
+    <input 
+        type="text" 
+        id="customerSearchInput" 
+        placeholder="Search name, phone, email or rego..."
+        onkeyup="searchCustomers()"
+        style="width:300px;"
+    >
+</div>
 
-        <div class="form-row">
-            <label>First Name</label>
-            <input type="text" id="customerFirstName">
-        </div>
+<!-- CUSTOMER TABLE -->
+<table>
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Vehicles</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="customerTableBody"></tbody>
+</table>
 
-        <div class="form-row">
-            <label>Last Name</label>
-            <input type="text" id="customerLastName">
-        </div>
+<!-- ADD / EDIT CUSTOMER FORM -->
+<div class="container" style="margin-top:20px;margin-bottom:20px;">
 
-        <div class="form-row">
-            <label>Phone</label>
-            <input type="text" id="customerPhone">
-        </div>
+<h3>Add / Edit Customer</h3>
 
-        <div class="form-row">
-            <label>Email</label>
-            <input type="text" id="customerEmail">
-        </div>
+<input type="hidden" id="customerId">
 
-        <button class="primary" onclick="saveCustomer()">Save Customer</button>
-    </div>
+<div class="form-row">
+    <label>First Name</label>
+    <input type="text" id="customerFirstName">
+</div>
 
-    <!-- VEHICLE FORM -->
-    <div class="container" style="margin-bottom:20px;">
-        <h3>Add Vehicle To Selected Customer</h3>
+<div class="form-row">
+    <label>Last Name</label>
+    <input type="text" id="customerLastName">
+</div>
 
-        <div class="form-row">
-            <label>Rego</label>
-            <input type="text" id="vehicleRego">
-        </div>
+<div class="form-row">
+    <label>Phone</label>
+    <input type="text" id="customerPhone">
+</div>
 
-        <div class="form-row">
-            <label>Make</label>
-            <input type="text" id="vehicleMake">
-        </div>
+<div class="form-row">
+    <label>Email</label>
+    <input type="text" id="customerEmail">
+</div>
 
-        <div class="form-row">
-            <label>Model</label>
-            <input type="text" id="vehicleModel">
-        </div>
+<button class="primary" onclick="saveCustomer()">Save Customer</button>
 
-        <div class="form-row">
-            <label>Year</label>
-            <input type="text" id="vehicleYear">
-        </div>
-    </div>
+</div>
 
-    <!-- CUSTOMER SEARCH -->
-    <div style="margin-bottom:15px;">
-        <input 
-            type="text" 
-            id="customerSearchInput" 
-            placeholder="Search name, phone, email or rego..."
-            onkeyup="searchCustomers()"
-            style="width:300px;"
-        >
-    </div>
+<!-- VEHICLE FORM -->
+<div class="container" style="margin-bottom:20px;">
 
-    <!-- CUSTOMER TABLE -->
-    <table>
-        <thead>
-            <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Vehicles</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="customerTableBody"></tbody>
-    </table>
+<h3>Add Vehicle To Selected Customer</h3>
+
+<div class="form-row">
+    <label>Rego</label>
+    <input type="text" id="vehicleRego">
+</div>
+
+<div class="form-row">
+    <label>Make</label>
+    <input type="text" id="vehicleMake">
+</div>
+
+<div class="form-row">
+    <label>Model</label>
+    <input type="text" id="vehicleModel">
+</div>
+
+<div class="form-row">
+    <label>Year</label>
+    <input type="text" id="vehicleYear">
+</div>
+
+</div>
 
 </div>
     <!-- JOB TYPES SECTION -->
