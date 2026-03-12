@@ -249,61 +249,63 @@ function renderCustomers(searchTerm=""){
 
     customers.forEach((c,i)=>{
 
-    // Migrate old records safely
-    if (!c.firstName && c.name) {
-        const parts = c.name.split(" ");
-        c.firstName = parts[0];
-        c.lastName = parts.slice(1).join(" ");
-    }
+    /* Migrate old records safely */
+if(!c.firstName && c.name){
+    const parts = c.name.split(" ");
+    c.firstName = parts[0];
+    c.lastName = parts.slice(1).join(" ");
+}
 
-    // Lowercase search term for matching
-    const term = (searchTerm || "").trim().toLowerCase();
+/* Lowercase search term for matching */
+const term = (searchTerm || "").trim().toLowerCase();
 
-    // Combine first + last for full name search
-    const fullName = ((c.firstName || "") + " " + (c.lastName || "")).toLowerCase();
+/* Combine first + last for full name search */
+const fullName = ((c.firstName || "") + " " + (c.lastName || "")).toLowerCase();
 
-    // Check if this customer matches the search term
-    const match =
-        fullName.includes(term) ||
-        (c.phone || "").toLowerCase().includes(term) ||
-        (c.email || "").toLowerCase().includes(term) ||
-        (c.vehicles || []).some(v => (v.rego || "").toLowerCase().includes(term));
+/* Check if this customer matches the search term in any way */
+const match =
+    fullName.includes(term) ||                     // full name
+    (c.firstName || "").toLowerCase().includes(term) || // first name individually
+    (c.lastName || "").toLowerCase().includes(term) ||  // last name individually
+    (c.phone || "").toLowerCase().includes(term) ||     // phone
+    (c.email || "").toLowerCase().includes(term) ||     // email
+    (c.vehicles || []).some(v =>
+        (v.rego || "").toLowerCase().includes(term)     // vehicle rego
+    );
 
-    if (term && !match) return;
+/* Skip customer if search term doesn’t match */
+if(term && !match) return;
 
-    // Render customer row
-    const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>${c.firstName || ""}</td>
-        <td>${c.lastName || ""}</td>
-        <td>${c.phone || ""}</td>
-        <td>${c.email || ""}</td>
-        <td>${(c.vehicles || []).length}</td>
-        <td>
-            <button onclick="editCustomer(${i})">Edit</button>
-            <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
-            <button onclick="deleteCustomer(${i})">✕</button>
-        </td>
+/* Render customer row */
+const row = document.createElement("tr");
+row.innerHTML = `
+    <td>${c.firstName || ""}</td>
+    <td>${c.lastName || ""}</td>
+    <td>${c.phone || ""}</td>
+    <td>${c.email || ""}</td>
+    <td>${(c.vehicles || []).length}</td>
+    <td>
+        <button onclick="editCustomer(${i})">Edit</button>
+        <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
+        <button onclick="deleteCustomer(${i})">✕</button>
+    </td>
+`;
+table.appendChild(row);
+
+/* Render vehicles under this customer */
+(c.vehicles || []).forEach(v => {
+    const vehicleRow = document.createElement("tr");
+    vehicleRow.style.background = "#f3f3f3";
+    vehicleRow.innerHTML = `
+        <td style="padding-left:30px;">↳ ${v.rego || ""}</td>
+        <td>${v.make || ""}</td>
+        <td>${v.model || ""}</td>
+        <td>${v.year || ""}</td>
+        <td></td>
+        <td></td>
     `;
-    table.appendChild(row);
-
-    // Render vehicles under this customer
-    (c.vehicles || []).forEach(v => {
-        const vehicleRow = document.createElement("tr");
-        vehicleRow.style.background = "#f3f3f3";
-        vehicleRow.innerHTML = `
-            <td style="padding-left:30px;">↳ ${v.rego || ""}</td>
-            <td>${v.make || ""}</td>
-            <td>${v.model || ""}</td>
-            <td>${v.year || ""}</td>
-            <td></td>
-            <td></td>
-        `;
-        table.appendChild(vehicleRow);
-    });
-
-}); // end forEach
-
+    table.appendChild(vehicleRow);
+});
 /* =================================
    SERVICE TYPES (MASTER DATABASE)
 ================================= */
