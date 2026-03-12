@@ -248,8 +248,7 @@ function renderCustomers(searchTerm=""){
     table.innerHTML = "";
 
     customers.forEach((c,i)=>{
-
-       /* Migrate old records safely */
+/* Migrate old records safely */
 if (!c.firstName && c.name) {
     const parts = c.name.split(" ");
     c.firstName = parts[0];
@@ -259,26 +258,20 @@ if (!c.firstName && c.name) {
 /* Lowercase search term for matching */
 const term = (searchTerm || "").trim().toLowerCase();
 
-/* Combine first + last for full name search */
-const fullName = ((c.firstName || "") + " " + (c.lastName || "")).toLowerCase();
-
 /* Determine if this customer matches search */
 const match =
-    fullName.includes(term) ||                         // full name
-    (c.firstName || "").toLowerCase().includes(term) ||// first name
-    (c.lastName || "").toLowerCase().includes(term) || // last name
-    (c.phone || "").toLowerCase().includes(term) ||    // phone
-    (c.email || "").toLowerCase().includes(term) ||    // email
-    (c.vehicles || []).some(v =>
-        (v.rego || "").toLowerCase().includes(term)   // vehicle rego
-    );
+    ((c.firstName || "") + " " + (c.lastName || "")).toLowerCase().includes(term) || // full name
+    (c.firstName || "").toLowerCase().includes(term) ||                               // first name
+    (c.lastName || "").toLowerCase().includes(term) ||                                // last name
+    (c.phone || "").toLowerCase().includes(term) ||                                   // phone
+    (c.email || "").toLowerCase().includes(term) ||                                   // email
+    (c.vehicles || []).some(v => (v.rego || "").toLowerCase().includes(term));       // vehicle rego
 
 /* Skip customer if search term doesn’t match */
 if (term && !match) return;
 
 /* Render customer row */
 const row = document.createElement("tr");
-
 row.innerHTML = `
     <td>${c.firstName || ""}</td>
     <td>${c.lastName || ""}</td>
@@ -291,26 +284,24 @@ row.innerHTML = `
         <button onclick="deleteCustomer(${i})">✕</button>
     </td>
 `;
-
 table.appendChild(row);
 
-/* Render vehicles under customer */
-(c.vehicles || []).forEach(v => {
-    const vehicleRow = document.createElement("tr");
-    vehicleRow.style.background = "#f3f3f3";
-
-    vehicleRow.innerHTML = `
-        <td style="padding-left:30px;">↳ ${v.rego || ""}</td>
-        <td>${v.make || ""}</td>
-        <td>${v.model || ""}</td>
-        <td>${v.year || ""}</td>
-        <td></td>
-        <td></td>
-    `;
-
-    table.appendChild(vehicleRow);
-});
-
+/* Render vehicles under customer only once */
+if (c.vehicles && c.vehicles.length) {
+    c.vehicles.forEach(v => {
+        const vehicleRow = document.createElement("tr");
+        vehicleRow.style.background = "#f3f3f3";
+        vehicleRow.innerHTML = `
+            <td style="padding-left:30px;">↳ ${v.rego || ""}</td>
+            <td>${v.make || ""}</td>
+            <td>${v.model || ""}</td>
+            <td>${v.year || ""}</td>
+            <td></td>
+            <td></td>
+        `;
+        table.appendChild(vehicleRow);
+    });
+}
 /* =================================
    SERVICE TYPES (MASTER DATABASE)
 ================================= */
