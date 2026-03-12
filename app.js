@@ -777,6 +777,22 @@ function renderParts(){
 let currentQuote = null;
 
 function startQuote(){
+   function saveCurrentQuote(){
+    if (!currentQuote) return;
+
+    // Add currentQuote to quotes array
+    quotes.push(currentQuote);
+
+    // Save to localStorage
+    saveQuotes();
+
+    // Update the table / sidebar / cards
+    renderQuotes();
+
+    // Hide builder and reset
+    document.getElementById("quoteBuilder").style.display = "none";
+    currentQuote = null;
+}
 
     currentQuote = {
         id: Date.now(),
