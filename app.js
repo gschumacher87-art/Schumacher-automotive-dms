@@ -249,63 +249,60 @@ function renderCustomers(searchTerm=""){
 
     customers.forEach((c,i)=>{
 
-        /* Migrate old records safely */
-        if(!c.firstName && c.name){
-            const parts = c.name.split(" ");
-            c.firstName = parts[0];
-            c.lastName = parts.slice(1).join(" ");
-        }
+    // Migrate old records safely
+    if (!c.firstName && c.name) {
+        const parts = c.name.split(" ");
+        c.firstName = parts[0];
+        c.lastName = parts.slice(1).join(" ");
+    }
 
-        const fullName = (c.firstName + " " + (c.lastName || "")).toLowerCase();
+    // Lowercase search term for matching
+    const term = (searchTerm || "").trim().toLowerCase();
 
-        const match =
-            fullName.includes(searchTerm) ||
-            (c.phone || "").toLowerCase().includes(searchTerm) ||
-            (c.email || "").toLowerCase().includes(searchTerm) ||
-            c.vehicles.some(v =>
-                (v.rego || "").toLowerCase().includes(searchTerm)
-            );
+    // Combine first + last for full name search
+    const fullName = ((c.firstName || "") + " " + (c.lastName || "")).toLowerCase();
 
-        if(searchTerm && !match) return;
+    // Check if this customer matches the search term
+    const match =
+        fullName.includes(term) ||
+        (c.phone || "").toLowerCase().includes(term) ||
+        (c.email || "").toLowerCase().includes(term) ||
+        (c.vehicles || []).some(v => (v.rego || "").toLowerCase().includes(term));
 
-        const row = document.createElement("tr");
+    if (term && !match) return;
 
-        row.innerHTML = `
-            <td>${c.firstName || ""}</td>
-            <td>${c.lastName || ""}</td>
-            <td>${c.phone || ""}</td>
-            <td>${c.email || ""}</td>
-            <td>${c.vehicles.length}</td>
-            <td>
-                <button onclick="editCustomer(${i})">Edit</button>
-                <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
-                <button onclick="deleteCustomer(${i})">✕</button>
-            </td>
+    // Render customer row
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>${c.firstName || ""}</td>
+        <td>${c.lastName || ""}</td>
+        <td>${c.phone || ""}</td>
+        <td>${c.email || ""}</td>
+        <td>${(c.vehicles || []).length}</td>
+        <td>
+            <button onclick="editCustomer(${i})">Edit</button>
+            <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
+            <button onclick="deleteCustomer(${i})">✕</button>
+        </td>
+    `;
+    table.appendChild(row);
+
+    // Render vehicles under this customer
+    (c.vehicles || []).forEach(v => {
+        const vehicleRow = document.createElement("tr");
+        vehicleRow.style.background = "#f3f3f3";
+        vehicleRow.innerHTML = `
+            <td style="padding-left:30px;">↳ ${v.rego || ""}</td>
+            <td>${v.make || ""}</td>
+            <td>${v.model || ""}</td>
+            <td>${v.year || ""}</td>
+            <td></td>
+            <td></td>
         `;
-
-        table.appendChild(row);
-
-        /* Render vehicles under customer */
-        c.vehicles.forEach(v=>{
-
-            const vehicleRow = document.createElement("tr");
-            vehicleRow.style.background = "#f3f3f3";
-
-            vehicleRow.innerHTML = `
-                <td style="padding-left:30px;">↳ ${v.rego}</td>
-                <td>${v.make}</td>
-                <td>${v.model}</td>
-                <td>${v.year}</td>
-                <td></td>
-                <td></td>
-            `;
-
-            table.appendChild(vehicleRow);
-        });
-
+        table.appendChild(vehicleRow);
     });
-}
 
+}); // end forEach
 
 /* =================================
    SERVICE TYPES (MASTER DATABASE)
