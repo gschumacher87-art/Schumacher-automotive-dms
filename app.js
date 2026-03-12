@@ -68,55 +68,67 @@ function saveQuotes(){
    SECTION SWITCHING
 ================================= */
 
-function showSection(sectionId){
-    [
-        "dashboardSection",
-        "customersSection",
-        "jobsSection",
-        "partsSection",
-        "calendarWrapper",
-        "quotesSection",
-        "invoicesSection"
-    ].forEach(id=>{
-        const el = document.getElementById(id);
-        if(el){
-            el.style.display = id === sectionId ? "block" : "none";
-        }
-    });
+const sections = {
+    dashboard: document.getElementById("dashboardSection"),
+    customers: document.getElementById("customersSection"),
+    jobs: document.getElementById("jobsSection"),
+    parts: document.getElementById("partsSection"),
+    invoices: document.getElementById("invoicesSection"),
+    quotes: document.getElementById("quotesSection"),
+    calendar: document.getElementById("calendarWrapper")
+};
+
+function hideAllSections() {
+    Object.values(sections).forEach(sec => sec.style.display = "none");
 }
 
-function openDashboard(){
-    showSection("dashboardSection");
+function openDashboard() {
+    hideAllSections();
+    sections.dashboard.style.display = "block";
 }
 
-function openCustomers(){
-    showSection("customersSection");
+function openCustomers() {
+    hideAllSections();
+    sections.customers.style.display = "block";
     renderCustomers();
 }
 
-function openJobs(){
-    showSection("jobsSection");
+function openJobs() {
+    hideAllSections();
+    sections.jobs.style.display = "block";
     renderServiceTypes();
 }
 
-function openParts(){
-    showSection("partsSection");
+function openParts() {
+    hideAllSections();
+    sections.parts.style.display = "block";
     renderParts();
 }
 
-function openCalendar(){
-    showSection("calendarWrapper");
+function openInvoices() {
+    hideAllSections();
+    sections.invoices.style.display = "block";
+    renderInvoices();
 }
 
-function openQuotes(){
-    showSection("quotesSection");
+function openQuotes() {
+    hideAllSections();
+    sections.quotes.style.display = "block";
     renderQuotes();
 }
 
-function openInvoices(){
-    showSection("invoicesSection");
-    renderInvoices();
+function openCalendar() {
+    hideAllSections();
+    sections.calendar.style.display = "block";
 }
+
+/* =================================
+   INITIALIZE
+================================= */
+
+document.addEventListener("DOMContentLoaded", function() {
+    openDashboard(); // show dashboard first
+});
 
 /* =================================
    CUSTOMERS DATABASE (UPGRADED)
