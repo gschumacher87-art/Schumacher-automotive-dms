@@ -841,6 +841,24 @@ function renderQuotes(){
     });
 }
 /* =================================
+   QUOTES STORAGE
+================================= */
+let quotes = JSON.parse(localStorage.getItem("workshopQuotes")) || [];
+
+let nextQuoteNumber =
+    parseInt(localStorage.getItem("nextQuoteNumber")) || 1;
+
+function getNextQuoteNumber(){
+    const number = nextQuoteNumber;
+    nextQuoteNumber++;
+    localStorage.setItem("nextQuoteNumber", nextQuoteNumber);
+    return number;
+}
+
+function saveQuotes(){
+    localStorage.setItem("workshopQuotes", JSON.stringify(quotes));
+}
+/* =================================
    INVOICES
 ================================= */
 
