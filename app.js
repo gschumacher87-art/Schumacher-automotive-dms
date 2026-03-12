@@ -775,9 +775,7 @@ function renderParts(){
 ================================= */
 
 let currentQuote = null;
-
-function startQuote(){
-   function saveCurrentQuote(){
+function saveCurrentQuote(){
     if (!currentQuote) return;
 
     // Add currentQuote to quotes array
@@ -794,6 +792,9 @@ function startQuote(){
     currentQuote = null;
 }
 
+
+function startQuote(){
+   
     currentQuote = {
         id: Date.now(),
         quoteNumber: getNextQuoteNumber(),
