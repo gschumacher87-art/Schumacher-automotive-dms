@@ -249,7 +249,7 @@ function renderCustomers(searchTerm=""){
 
     customers.forEach((c,i)=>{
 
-    /* Migrate old records safely */
+        /* Migrate old records safely */
         if(!c.firstName && c.name){
             const parts = c.name.split(" ");
             c.firstName = parts[0];
@@ -305,6 +305,7 @@ function renderCustomers(searchTerm=""){
 
     });
 }
+
 
 /* =================================
    SERVICE TYPES (MASTER DATABASE)
@@ -773,140 +774,31 @@ function renderParts(){
    QUOTES
 ================================= */
 
-// Load quotes from storage
-let quotes = JSON.parse(localStorage.getItem("workshopQuotes")) || [];
-let nextQuoteNumber = parseInt(localStorage.getItem("nextQuoteNumber")) || 1;
+function createQuote(){
 
-let currentQuote = null;
-
-function getNextQuoteNumber() {
-    const number = nextQuoteNumber;
-    nextQuoteNumber++;
-    localStorage.setItem("nextQuoteNumber", nextQuoteNumber);
-    return number;
-}
-
-function startQuote() {
-    currentQuote = {
+    const quote = {
         id: Date.now(),
         quoteNumber: getNextQuoteNumber(),
-        customerName: "",
-        vehicle: "",
+        customerId: null,
+        date: new Date().toISOString(),
         items: [],
-        subtotal: 0,
-        gst: 0,
+        labourTotal: 0,
+        partsTotal: 0,
         total: 0,
-        status: "Draft",
-        date: new Date().toISOString()
+        status: "Draft"
     };
 
-    // Clear input fields
-    document.getElementById("quoteCustomerName").value = "";
-    document.getElementById("quoteVehicle").value = "";
-    document.getElementById("quoteItemsBody").innerHTML = "";
-    document.getElementById("quoteSubtotal").textContent = "0.00";
-    document.getElementById("quoteGst").textContent = "0.00";
-    document.getElementById("quoteGrandTotal").textContent = "0.00";
-
-    document.getElementById("quoteBuilder").style.display = "block";
-}
-
-function addQuoteItem() {
-    const desc = document.getElementById("quoteItemDescription").value.trim();
-    const price = parseFloat(document.getElementById("quoteItemPrice").value) || 0;
-    const qty = parseInt(document.getElementById("quoteItemQty").value) || 0;
-
-    if (!desc || price <= 0 || qty <= 0) return;
-
-    const total = price * qty;
-    const item = { description: desc, price, qty, total };
-    currentQuote.items.push(item);
-
-    // Render item in table
-    const tbody = document.getElementById("quoteItemsBody");
-    const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>${desc}</td>
-        <td>${price.toFixed(2)}</td>
-        <td>${qty}</td>
-        <td>${total.toFixed(2)}</td>
-        <td><button onclick="removeQuoteItem(${currentQuote.items.length - 1}, this)">Remove</button></td>
-    `;
-    tbody.appendChild(row);
-
-    updateQuoteTotals();
-
-    // Clear inputs
-    document.getElementById("quoteItemDescription").value = "";
-    document.getElementById("quoteItemPrice").value = "";
-    document.getElementById("quoteItemQty").value = 1;
-}
-
-function removeQuoteItem(index, btn) {
-    currentQuote.items.splice(index, 1);
-    btn.closest("tr").remove();
-    updateQuoteTotals();
-}
-
-function updateQuoteTotals() {
-    const subtotal = currentQuote.items.reduce((sum, i) => sum + i.total, 0);
-    const gst = subtotal * 0.1;
-    const total = subtotal + gst;
-
-    currentQuote.subtotal = subtotal;
-    currentQuote.gst = gst;
-    currentQuote.total = total;
-
-    document.getElementById("quoteSubtotal").textContent = subtotal.toFixed(2);
-    document.getElementById("quoteGst").textContent = gst.toFixed(2);
-    document.getElementById("quoteGrandTotal").textContent = total.toFixed(2);
-}
-
-function saveCurrentQuote() {
-    if (!currentQuote) return;
-
-    currentQuote.customerName = document.getElementById("quoteCustomerName").value.trim();
-    currentQuote.vehicle = document.getElementById("quoteVehicle").value.trim();
-
-    if (!currentQuote.customerName || !currentQuote.vehicle || currentQuote.items.length === 0) {
-        alert("Please fill customer, vehicle and add at least one item.");
-        return;
-    }
-
-    quotes.push(currentQuote);
-    localStorage.setItem("workshopQuotes", JSON.stringify(quotes));
-
+    quotes.push(quote);
+    saveQuotes();
     renderQuotes();
-
-    document.getElementById("quoteBuilder").style.display = "none";
-    currentQuote = null;
 }
 
-function renderQuotes() {
-    const table = document.getElementById("quotesTableBody");
-    if (!table) return;
+function convertQuoteToInvoice(index){
 
-    table.innerHTML = "";
-
-    quotes.forEach((q, i) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>Q${q.quoteNumber}</td>
-            <td>${new Date(q.date).toLocaleDateString('en-AU')}</td>
-            <td>$${q.total.toFixed(2)}</td>
-            <td>${q.status}</td>
-            <td>
-                ${q.status === "Draft" ? `<button onclick="convertQuoteToInvoice(${i})">Convert</button>` : ""}
-            </td>
-        `;
-        table.appendChild(row);
-    });
-}
-
-function convertQuoteToInvoice(index) {
     const quote = quotes[index];
-    if (!quote) return;
+    if(!quote) return;
 
+    // ⚠️ This assumes invoices array + getNextInvoiceNumber() exist
     const invoice = {
         ...quote,
         invoiceNumber: getNextInvoiceNumber(),
@@ -917,8 +809,36 @@ function convertQuoteToInvoice(index) {
     saveInvoices();
 
     quote.status = "Converted";
-    localStorage.setItem("workshopQuotes", JSON.stringify(quotes));
+    saveQuotes();
+
     renderQuotes();
+}
+
+function renderQuotes(){
+
+    const table = document.getElementById("quotesTableBody");
+    if(!table) return;
+
+    table.innerHTML = "";
+
+    quotes.forEach((q,i)=>{
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>Q${q.quoteNumber}</td>
+            <td>${new Date(q.date).toLocaleDateString('en-AU')}</td>
+            <td>$${q.total.toFixed(2)}</td>
+            <td>${q.status}</td>
+            <td>
+                <button onclick="convertQuoteToInvoice(${i})">
+                    Convert
+                </button>
+            </td>
+        `;
+
+        table.appendChild(row);
+    });
 }
 /* =================================
    INVOICES
