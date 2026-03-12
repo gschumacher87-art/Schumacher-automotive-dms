@@ -256,25 +256,17 @@ if(!c.firstName && c.name){
     c.lastName = parts.slice(1).join(" ");
 }
 
-/* Lowercase search term for matching */
-const term = (searchTerm || "").trim().toLowerCase();
+const fullName = (c.firstName + " " + (c.lastName || "")).toLowerCase();
 
-/* Combine first + last for full name search */
-const fullName = ((c.firstName || "") + " " + (c.lastName || "")).toLowerCase();
-
-/* Check if this customer matches the search term in any way */
 const match =
-    fullName.includes(term) ||                     // full name
-    (c.firstName || "").toLowerCase().includes(term) || // first name individually
-    (c.lastName || "").toLowerCase().includes(term) ||  // last name individually
-    (c.phone || "").toLowerCase().includes(term) ||     // phone
-    (c.email || "").toLowerCase().includes(term) ||     // email
-    (c.vehicles || []).some(v =>
-        (v.rego || "").toLowerCase().includes(term)     // vehicle rego
+    fullName.includes(searchTerm) ||
+    (c.phone || "").toLowerCase().includes(searchTerm) ||
+    (c.email || "").toLowerCase().includes(searchTerm) ||
+    c.vehicles.some(v =>
+        (v.rego || "").toLowerCase().includes(searchTerm)
     );
 
-/* Skip customer if search term doesn’t match */
-if(term && !match) return;
+if(searchTerm && !match) return;
 
 /* Render customer row */
 const row = document.createElement("tr");
@@ -283,7 +275,7 @@ row.innerHTML = `
     <td>${c.lastName || ""}</td>
     <td>${c.phone || ""}</td>
     <td>${c.email || ""}</td>
-    <td>${(c.vehicles || []).length}</td>
+    <td>${c.vehicles.length}</td>
     <td>
         <button onclick="editCustomer(${i})">Edit</button>
         <button onclick="addVehicleToCustomer(${i})">+ Vehicle</button>
@@ -292,15 +284,15 @@ row.innerHTML = `
 `;
 table.appendChild(row);
 
-/* Render vehicles under this customer */
-(c.vehicles || []).forEach(v => {
+/* Render vehicles under customer */
+c.vehicles.forEach(v=>{
     const vehicleRow = document.createElement("tr");
     vehicleRow.style.background = "#f3f3f3";
     vehicleRow.innerHTML = `
-        <td style="padding-left:30px;">↳ ${v.rego || ""}</td>
-        <td>${v.make || ""}</td>
-        <td>${v.model || ""}</td>
-        <td>${v.year || ""}</td>
+        <td style="padding-left:30px;">↳ ${v.rego}</td>
+        <td>${v.make}</td>
+        <td>${v.model}</td>
+        <td>${v.year}</td>
         <td></td>
         <td></td>
     `;
