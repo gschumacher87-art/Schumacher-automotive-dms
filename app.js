@@ -311,28 +311,6 @@ table.appendChild(row);
     table.appendChild(vehicleRow);
 });
 
-        /* Render vehicles under customer */
-        c.vehicles.forEach(v=>{
-
-            const vehicleRow = document.createElement("tr");
-            vehicleRow.style.background = "#f3f3f3";
-
-            vehicleRow.innerHTML = `
-                <td style="padding-left:30px;">↳ ${v.rego}</td>
-                <td>${v.make}</td>
-                <td>${v.model}</td>
-                <td>${v.year}</td>
-                <td></td>
-                <td></td>
-            `;
-
-            table.appendChild(vehicleRow);
-        });
-
-    });
-}
-
-
 /* =================================
    SERVICE TYPES (MASTER DATABASE)
 ================================= */
