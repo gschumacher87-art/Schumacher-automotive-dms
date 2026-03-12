@@ -14,7 +14,7 @@
     <ul>
         <li onclick="openDashboard()">Dashboard</li>
         <li onclick="openCustomers()">Customers</li>
-        <li onclick="openJobs()">Repair types</li>
+        <li onclick="openJobs()">Jobs</li>
         <li onclick="openCalendar()">Calendar</li>
         <li onclick="openInvoices()">Invoices</li>
         <li onclick="openParts()">Parts</li>
@@ -47,92 +47,87 @@
 
     <!-- CUSTOMERS SECTION -->
 <div id="customersSection" style="display:none;">
+    <h1>Customers</h1>
 
-<h1>Customers</h1>
+    <!-- ADD / EDIT CUSTOMER FORM -->
+    <div class="container" style="margin-bottom:20px;">
+        <h3>Add / Edit Customer</h3>
 
-<!-- CUSTOMER SEARCH -->
-<div style="margin-bottom:15px;">
-    <input 
-        type="text" 
-        id="customerSearchInput" 
-        placeholder="Search name, phone, email or rego..."
-        onkeyup="searchCustomers()"
-        style="width:300px;"
-    >
-</div>
+        <input type="hidden" id="customerId">
 
-<!-- CUSTOMER TABLE -->
-<table>
-    <thead>
-        <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Vehicles</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody id="customerTableBody"></tbody>
-</table>
+        <div class="form-row">
+            <label>First Name</label>
+            <input type="text" id="customerFirstName">
+        </div>
 
-<!-- ADD / EDIT CUSTOMER FORM -->
-<div class="container" style="margin-top:20px;margin-bottom:20px;">
+        <div class="form-row">
+            <label>Last Name</label>
+            <input type="text" id="customerLastName">
+        </div>
 
-<h3>Add / Edit Customer</h3>
+        <div class="form-row">
+            <label>Phone</label>
+            <input type="text" id="customerPhone">
+        </div>
 
-<input type="hidden" id="customerId">
+        <div class="form-row">
+            <label>Email</label>
+            <input type="text" id="customerEmail">
+        </div>
 
-<div class="form-row">
-    <label>First Name</label>
-    <input type="text" id="customerFirstName">
-</div>
+        <button class="primary" onclick="saveCustomer()">Save Customer</button>
+    </div>
 
-<div class="form-row">
-    <label>Last Name</label>
-    <input type="text" id="customerLastName">
-</div>
+    <!-- VEHICLE FORM -->
+    <div class="container" style="margin-bottom:20px;">
+        <h3>Add Vehicle To Selected Customer</h3>
 
-<div class="form-row">
-    <label>Phone</label>
-    <input type="text" id="customerPhone">
-</div>
+        <div class="form-row">
+            <label>Rego</label>
+            <input type="text" id="vehicleRego">
+        </div>
 
-<div class="form-row">
-    <label>Email</label>
-    <input type="text" id="customerEmail">
-</div>
+        <div class="form-row">
+            <label>Make</label>
+            <input type="text" id="vehicleMake">
+        </div>
 
-<button class="primary" onclick="saveCustomer()">Save Customer</button>
+        <div class="form-row">
+            <label>Model</label>
+            <input type="text" id="vehicleModel">
+        </div>
 
-</div>
+        <div class="form-row">
+            <label>Year</label>
+            <input type="text" id="vehicleYear">
+        </div>
+    </div>
 
-<!-- VEHICLE FORM -->
-<div class="container" style="margin-bottom:20px;">
+    <!-- CUSTOMER SEARCH -->
+    <div style="margin-bottom:15px;">
+        <input 
+            type="text" 
+            id="customerSearchInput" 
+            placeholder="Search name, phone, email or rego..."
+            onkeyup="searchCustomers()"
+            style="width:300px;"
+        >
+    </div>
 
-<h3>Add Vehicle To Selected Customer</h3>
-
-<div class="form-row">
-    <label>Rego</label>
-    <input type="text" id="vehicleRego">
-</div>
-
-<div class="form-row">
-    <label>Make</label>
-    <input type="text" id="vehicleMake">
-</div>
-
-<div class="form-row">
-    <label>Model</label>
-    <input type="text" id="vehicleModel">
-</div>
-
-<div class="form-row">
-    <label>Year</label>
-    <input type="text" id="vehicleYear">
-</div>
-
-</div>
+    <!-- CUSTOMER TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Vehicles</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="customerTableBody"></tbody>
+    </table>
 
 </div>
     <!-- JOB TYPES SECTION -->
@@ -273,56 +268,8 @@
     <h1>Quotes</h1>
 
     <div style="margin-bottom:20px;">
-        <button class="primary" onclick="startQuote()">+ Create Quote</button>
+        <button class="primary" onclick="createQuote()">+ Create Quote</button>
     </div>
-    <div id="quoteBuilder" style="display:none;">
-
-<div class="container">
-<h3>Customer Details</h3>
-
-<input type="text" id="quoteCustomerName" placeholder="Customer Name">
-<input type="text" id="quoteVehicle" placeholder="Vehicle">
-
-</div>
-
-<div class="container">
-
-<h3>Add Item</h3>
-
-<div style="display:flex; gap:10px;">
-<input type="text" id="quoteItemDescription" placeholder="Description">
-<input type="number" id="quoteItemPrice" placeholder="Price">
-<input type="number" id="quoteItemQty" value="1">
-</div>
-
-<button class="primary" onclick="addQuoteItem()">Add Item</button>
-
-<table>
-
-<thead>
-<tr>
-<th>Description</th>
-<th>Price</th>
-<th>Qty</th>
-<th>Total</th>
-<th></th>
-</tr>
-</thead>
-
-<tbody id="quoteItemsBody"></tbody>
-
-</table>
-
-<div style="text-align:right; margin-top:10px;">
-Subtotal: $<span id="quoteSubtotal">0.00</span><br>
-GST: $<span id="quoteGst">0.00</span><br>
-Total: $<span id="quoteGrandTotal">0.00</span>
-</div>
-
-<button class="primary" onclick="saveCurrentQuote()">Save Quote</button>
-</div>
-
-</div>
 
     <table>
         <thead>
