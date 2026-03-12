@@ -248,8 +248,8 @@ function renderCustomers(searchTerm=""){
     table.innerHTML = "";
 
     customers.forEach((c,i)=>{
-    
-/* Migrate old records safely */
+
+        /* Migrate old records safely */
         if(!c.firstName && c.name){
             const parts = c.name.split(" ");
             c.firstName = parts[0];
@@ -305,7 +305,8 @@ function renderCustomers(searchTerm=""){
 
     });
 }
-     
+
+
 /* =================================
    SERVICE TYPES (MASTER DATABASE)
 ================================= */
