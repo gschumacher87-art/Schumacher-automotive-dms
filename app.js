@@ -774,25 +774,25 @@ function renderParts(){
    QUOTES
 ================================= */
 
-function createQuote(){
+let currentQuote = null;
 
-    const quote = {
+function startQuote(){
+
+    currentQuote = {
         id: Date.now(),
         quoteNumber: getNextQuoteNumber(),
-        customerId: null,
-        date: new Date().toISOString(),
+        customerName: "",
+        vehicle: "",
         items: [],
-        labourTotal: 0,
-        partsTotal: 0,
+        subtotal: 0,
+        gst: 0,
         total: 0,
-        status: "Draft"
+        status: "Draft",
+        date: new Date().toISOString()
     };
 
-    quotes.push(quote);
-    saveQuotes();
-    renderQuotes();
+    document.getElementById("quoteBuilder").style.display = "block";
 }
-
 function convertQuoteToInvoice(index){
 
     const quote = quotes[index];
