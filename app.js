@@ -249,23 +249,20 @@ function renderCustomers(searchTerm=""){
 
     customers.forEach((c,i)=>{
 
-        /* Migrate old records safely */
-        if(!c.firstName && c.name){
-            const parts = c.name.split(" ");
-            c.firstName = parts[0];
-            c.lastName = parts.slice(1).join(" ");
-        }
+      /* Migrate old records safely */
+if (!c.firstName && c.name) {
+    const parts = c.name.split(" ");
+    c.firstName = parts[0];
+    c.lastName = parts.slice(1).join(" ");
+}
 
-        const fullName = (c.firstName + " " + (c.lastName || "")).toLowerCase();
-
-        const match =
-            fullName.includes(searchTerm) ||
-            (c.phone || "").toLowerCase().includes(searchTerm) ||
-            (c.email || "").toLowerCase().includes(searchTerm) ||
-            c.vehicles.some(v =>
-                (v.rego || "").toLowerCase().includes(searchTerm)
-            );
-
+/* Check if customer matches search term */
+const match =
+    (c.firstName && c.firstName.toLowerCase().includes(searchTerm)) ||
+    (c.lastName && c.lastName.toLowerCase().includes(searchTerm)) ||
+    (c.phone && c.phone.toLowerCase().includes(searchTerm)) ||
+    (c.email && c.email.toLowerCase().includes(searchTerm)) ||
+    (c.vehicles && c.vehicles.some(v => v.rego && v.rego.toLowerCase().includes(searchTerm)));
         if(searchTerm && !match) return;
 
         const row = document.createElement("tr");
