@@ -249,21 +249,26 @@ function renderCustomers(searchTerm=""){
 
     customers.forEach((c,i)=>{
 
-      /* Migrate old records safely */
+    /* Migrate old records safely */
 if (!c.firstName && c.name) {
     const parts = c.name.split(" ");
     c.firstName = parts[0];
     c.lastName = parts.slice(1).join(" ");
 }
 
-/* Check if customer matches search term */
+/* Combine first + last for full name search */
+const fullName = ((c.firstName || "") + " " + (c.lastName || "")).toLowerCase();
+
+/* Check if customer matches the search term in any field */
 const match =
-    (c.firstName && c.firstName.toLowerCase().includes(searchTerm)) ||
-    (c.lastName && c.lastName.toLowerCase().includes(searchTerm)) ||
-    (c.phone && c.phone.toLowerCase().includes(searchTerm)) ||
-    (c.email && c.email.toLowerCase().includes(searchTerm)) ||
-    (c.vehicles && c.vehicles.some(v => v.rego && v.rego.toLowerCase().includes(searchTerm)));
-        if(searchTerm && !match) return;
+    fullName.includes(searchTerm) ||                     // full name
+    (c.firstName || "").toLowerCase().includes(searchTerm) || // first name
+    (c.lastName || "").toLowerCase().includes(searchTerm) ||  // last name
+    (c.phone || "").toLowerCase().includes(searchTerm) ||     // phone
+    (c.email || "").toLowerCase().includes(searchTerm) ||     // email
+    (c.vehicles || []).some(v => 
+        (v.rego || "").toLowerCase().includes(searchTerm)
+    ); // vehicle rego
 
         const row = document.createElement("tr");
 
