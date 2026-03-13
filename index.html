@@ -211,42 +211,61 @@
     </div>
 
     <!-- INVOICES SECTION -->
-    <div id="invoicesSection" style="display:none;">
-        <h1>Invoices</h1>
+<div id="invoicesSection" style="display:none;">
+    <h1>Invoices</h1>
 
-        <div class="container">
-            <h3>Customer Details</h3>
-            <input type="text" id="customerName" placeholder="Customer Name">
-            <input type="text" id="vehicle" placeholder="Vehicle">
+    <div class="container">
+        <h3>Customer Details</h3>
+        <input type="text" id="customerName" placeholder="Customer Name">
+        <input type="text" id="vehicle" placeholder="Vehicle">
+    </div>
+
+    <div class="container">
+        <h3>Add Item</h3>
+
+        <select id="partsLibrarySelect">
+            <option value="">Select From Parts Library</option>
+        </select>
+
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="itemDescription" placeholder="Description">
+            <input type="number" id="itemPrice" placeholder="Price">
+            <input type="number" id="itemQty" value="1">
         </div>
 
-        <div class="container">
-            <h3>Add Item</h3>
+        <button class="primary" onclick="addInvoiceItem()">Add Item</button>
 
-            <select id="partsLibrarySelect">
-                <option value="">Select From Parts Library</option>
-            </select>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="invoiceItemsBody"></tbody>
+        </table>
 
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="itemDescription" placeholder="Description">
-                <input type="number" id="itemPrice" placeholder="Price">
-                <input type="number" id="itemQty" value="1">
-            </div>
+        <div style="text-align:right; margin-top:10px;">
+            Subtotal: $<span id="subtotal">0.00</span><br>
+            GST: $<span id="gst">0.00</span><br>
+            Total: $<span id="grandTotal">0.00</span>
+        </div>
+    </div>
+</div>
 
-            <button class="primary" onclick="addInvoiceItem()">Add Item</button>
+<!-- QUOTES SECTION -->
+<div id="quotesSection" style="display:none;">
+    <h1>Quotes</h1>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Total</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="invoiceItemsBody"></tbody>
-            </table>
+    <div class="container">
+        <h3>Customer Details</h3>
+        <input type="text" id="quoteCustomerName" placeholder="Customer Name">
+        <input type="text" id="quoteVehicle" placeholder="Vehicle">
+    </div>
+
     <div class="container">
         <h3>Add Item</h3>
 
@@ -279,9 +298,6 @@
             GST: $<span id="quoteGst">0.00</span><br>
             Total: $<span id="quoteGrandTotal">0.00</span>
         </div>
-
-        </div>
-</div>
 
         <button class="primary" onclick="saveQuote()">Save Quote</button>
     </div>
