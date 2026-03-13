@@ -271,13 +271,12 @@
             <option value="">Select From Parts Library</option>
         </select>
 
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; margin-top:10px;">
             <input type="text" id="quoteItemDescription" placeholder="Description">
             <input type="number" id="quoteItemPrice" placeholder="Price">
             <input type="number" id="quoteItemQty" value="1">
+            <button class="primary" onclick="addQuoteItem()">Add Item</button>
         </div>
-
-        <button class="primary" onclick="addQuoteItem()">Add Item</button>
 
         <table>
             <thead>
@@ -299,6 +298,21 @@
         </div>
 
         <button class="primary" onclick="saveQuote()">Save Quote</button>
+    </div>
+
+    <div class="container" style="margin-top:20px;">
+        <h3>Saved Quotes</h3>
+        <table class="bookings-table">
+            <thead>
+                <tr>
+                    <th>Quote #</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="quotesTableBody"></tbody>
+        </table>
     </div>
 </div>
     <!-- CALENDAR SECTION -->
