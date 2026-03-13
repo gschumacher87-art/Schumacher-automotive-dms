@@ -259,23 +259,46 @@
     <h1>Quotes</h1>
 
     <div class="container">
-        <button class="primary" onclick="createQuote()">+ Create Quote</button>
+        <h3>Customer Details</h3>
+        <input type="text" id="quoteCustomerName" placeholder="Customer Name">
+        <input type="text" id="quoteVehicle" placeholder="Vehicle">
     </div>
 
     <div class="container">
-        <h3>Saved Quotes</h3>
+        <h3>Add Item</h3>
+
+        <select id="quotePartsLibrarySelect">
+            <option value="">Select From Parts Library</option>
+        </select>
+
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="quoteItemDescription" placeholder="Description">
+            <input type="number" id="quoteItemPrice" placeholder="Price">
+            <input type="number" id="quoteItemQty" value="1">
+        </div>
+
+        <button class="primary" onclick="addQuoteItem()">Add Item</button>
+
         <table>
             <thead>
                 <tr>
-                    <th>Quote #</th>
-                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Qty</th>
                     <th>Total</th>
-                    <th>Status</th>
                     <th></th>
                 </tr>
             </thead>
-            <tbody id="quotesTableBody"></tbody>
+            <tbody id="quoteItemsBody"></tbody>
         </table>
+
+        <div style="text-align:right; margin-top:10px;">
+            Subtotal: $<span id="quoteSubtotal">0.00</span><br>
+            GST: $<span id="quoteGst">0.00</span><br>
+            Total: $<span id="quoteGrandTotal">0.00</span>
+        </div>
+
+        <button class="primary" onclick="saveQuote()">Save Quote</button>
     </div>
 </div>
     <!-- CALENDAR SECTION -->
