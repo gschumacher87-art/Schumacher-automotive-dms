@@ -769,6 +769,19 @@ function renderParts(){
         table.appendChild(row);
     });
 }
+function openQuotes(){
+
+    document.getElementById("dashboardSection").style.display = "none";
+    document.getElementById("customersSection").style.display = "none";
+    document.getElementById("jobsSection").style.display = "none";
+    document.getElementById("partsSection").style.display = "none";
+    document.getElementById("invoicesSection").style.display = "none";
+    document.getElementById("calendarWrapper").style.display = "none";
+
+    document.getElementById("quotesSection").style.display = "block";
+
+    renderQuotes();
+}
 
 /* =================================
    QUOTES
