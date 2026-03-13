@@ -829,17 +829,11 @@ function renderQuotes(){
         const row = document.createElement("tr");
 
         row.innerHTML = `
-            <td>Q${q.quoteNumber}</td>
-            <td>${new Date(q.date).toLocaleDateString('en-AU')}</td>
-            <td>$${q.total.toFixed(2)}</td>
-            <td>${q.status}</td>
-            <td>
-                <button onclick="convertQuoteToInvoice(${i})">
-                    Convert
-                </button>
-            </td>
-        `;
-
+    <td>Q${q.quoteNumber}</td>
+    <td>${new Date(q.date).toLocaleDateString('en-AU')}</td>
+    <td>$${q.total.toFixed(2)}</td>
+    <td>${q.status}</td>
+`;
         table.appendChild(row);
     });
 }
