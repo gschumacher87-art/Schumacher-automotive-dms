@@ -774,69 +774,132 @@ function renderParts(){
    QUOTES
 ================================= */
 
+let quotes = JSON.parse(localStorage.getItem("workshopQuotes")) || [];
+let nextQuoteNumber = parseInt(localStorage.getItem("nextQuoteNumber")) || 1;
+
+function getNextQuoteNumber(){
+    const number = nextQuoteNumber;
+    nextQuoteNumber++;
+    localStorage.setItem("nextQuoteNumber", nextQuoteNumber);
+    return number;
+}
+
 function saveQuotes(){
     localStorage.setItem("workshopQuotes", JSON.stringify(quotes));
 }
 
-function createQuote(){
+/* ===== CURRENT QUOTE ITEMS ===== */
+let currentQuoteItems = [];
+
+function addQuoteItem(){
+    const desc = document.getElementById("quoteItemDescription").value;
+    const price = parseFloat(document.getElementById("quoteItemPrice").value) || 0;
+    const qty = parseInt(document.getElementById("quoteItemQty").value) || 1;
+
+    if(!desc) return alert("Please enter a description");
+
+    const item = { description: desc, price, qty, total: price * qty };
+    currentQuoteItems.push(item);
+    renderQuoteItems();
+    clearQuoteItemInputs();
+}
+
+function clearQuoteItemInputs(){
+    document.getElementById("quoteItemDescription").value = "";
+    document.getElementById("quoteItemPrice").value = "";
+    document.getElementById("quoteItemQty").value = 1;
+}
+
+/* ===== RENDER ITEMS ===== */
+function renderQuoteItems(){
+    const tbody = document.getElementById("quoteItemsBody");
+    tbody.innerHTML = "";
+
+    let subtotal = 0;
+
+    currentQuoteItems.forEach((item,i)=>{
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${item.description}</td>
+            <td>$${item.price.toFixed(2)}</td>
+            <td>${item.qty}</td>
+            <td>$${item.total.toFixed(2)}</td>
+            <td><button onclick="removeQuoteItem(${i})">✕</button></td>
+        `;
+        tbody.appendChild(row);
+        subtotal += item.total;
+    });
+
+    const gst = subtotal * 0.1; // 10% GST
+    const grandTotal = subtotal + gst;
+
+    document.getElementById("quoteSubtotal").textContent = subtotal.toFixed(2);
+    document.getElementById("quoteGst").textContent = gst.toFixed(2);
+    document.getElementById("quoteGrandTotal").textContent = grandTotal.toFixed(2);
+}
+
+function removeQuoteItem(index){
+    currentQuoteItems.splice(index,1);
+    renderQuoteItems();
+}
+
+/* ===== SAVE QUOTE ===== */
+function saveQuote(){
+    const customerName = document.getElementById("quoteCustomerName").value;
+    const vehicle = document.getElementById("quoteVehicle").value;
+
+    if(!customerName) return alert("Enter customer name");
+    if(currentQuoteItems.length === 0) return alert("Add at least one item");
+
+    const subtotal = parseFloat(document.getElementById("quoteSubtotal").textContent);
+    const gst = parseFloat(document.getElementById("quoteGst").textContent);
+    const total = parseFloat(document.getElementById("quoteGrandTotal").textContent);
 
     const quote = {
         id: Date.now(),
         quoteNumber: getNextQuoteNumber(),
-        customerId: null,
-        date: new Date().toISOString(),
-        items: [],
+        customerName,
+        vehicle,
+        items: currentQuoteItems,
         labourTotal: 0,
-        partsTotal: 0,
-        total: 0,
+        partsTotal: subtotal,
+        total,
+        date: new Date().toISOString(),
         status: "Draft"
     };
 
     quotes.push(quote);
     saveQuotes();
     renderQuotes();
+
+    // Clear current quote
+    currentQuoteItems = [];
+    renderQuoteItems();
+    document.getElementById("quoteCustomerName").value = "";
+    document.getElementById("quoteVehicle").value = "";
 }
 
-function convertQuoteToInvoice(index){
-
-    const quote = quotes[index];
-    if(!quote) return;
-
-    const invoice = {
-        ...quote,
-        invoiceNumber: getNextInvoiceNumber(),
-        status: "Unpaid"
-    };
-
-    invoices.push(invoice);
-    saveInvoices();
-
-    quote.status = "Converted";
-    saveQuotes();
-
-    renderQuotes();
-}
-
+/* ===== RENDER SAVED QUOTES ===== */
 function renderQuotes(){
-
     const table = document.getElementById("quotesTableBody");
     if(!table) return;
 
     table.innerHTML = "";
 
     quotes.forEach((q,i)=>{
-
         const row = document.createElement("tr");
-
         row.innerHTML = `
-    <td>Q${q.quoteNumber}</td>
-    <td>${new Date(q.date).toLocaleDateString('en-AU')}</td>
-    <td>$${q.total.toFixed(2)}</td>
-    <td>${q.status}</td>
-`;
+            <td>Q${q.quoteNumber}</td>
+            <td>${new Date(q.date).toLocaleDateString('en-AU')}</td>
+            <td>$${q.total.toFixed(2)}</td>
+            <td>${q.status}</td>
+        `;
         table.appendChild(row);
     });
 }
+
+// Initial render
+renderQuotes();
 /* =================================
    INVOICES
 ================================= */
