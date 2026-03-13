@@ -254,30 +254,24 @@
                 Total: $<span id="grandTotal">0.00</span>
             </div>
 
-            <button class="primary" onclick="saveInvoice()">Save Invoice</button>
-        </div>
-
-        <div class="container">
-            <h3>Saved Invoices</h3>
-            <div id="invoiceList"></div>
-        </div>
-    </div>
-
-    <div id="quotesSection" style="display:none;">
+            <!-- QUOTES SECTION -->
+<div id="quotesSection" style="display:none;">
     <h1>Quotes</h1>
 
-    <div style="margin-bottom:20px;">
+    <div class="container">
         <button class="primary" onclick="createQuote()">+ Create Quote</button>
     </div>
 
-    <div class="bookings-wrapper">
-        <table class="bookings-table">
+    <div class="container">
+        <h3>Saved Quotes</h3>
+        <table>
             <thead>
                 <tr>
                     <th>Quote #</th>
                     <th>Date</th>
                     <th>Total</th>
                     <th>Status</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody id="quotesTableBody"></tbody>
