@@ -783,6 +783,49 @@ function openQuotes(){
     renderQuotes();
 }
 
+/* ===== PARTS ↔ QUOTES INTEGRATION ===== */
+
+// Auto-fill quote inputs when a part is selected
+function fillPartIntoQuote(){
+    const select = document.getElementById("quotePartSelect");
+    const partId = parseInt(select.value);
+    const part = parts.find(p => p.id === partId);
+    if(!part) return;
+
+    document.getElementById("quoteItemDescription").value = part.description;
+    document.getElementById("quoteItemPrice").value = part.price.toFixed(2);
+    document.getElementById("quoteItemQty").value = 1;
+}
+
+// Populate the quotePartSelect dropdown from parts array
+function populatePartSelect(){
+    const select = document.getElementById("quotePartSelect");
+    if(!select) return;
+
+    select.innerHTML = '<option value="">--Select Part--</option>';
+    parts.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.number} - ${p.description}`;
+        select.appendChild(opt);
+    });
+}
+
+// Update renderParts() to call this at the end
+const originalRenderParts = renderParts;
+renderParts = function(){
+    originalRenderParts();
+    populatePartSelect();
+}
+
+// Clear inputs after adding quote item
+const originalClearQuoteItemInputs = clearQuoteItemInputs;
+clearQuoteItemInputs = function(){
+    originalClearQuoteItemInputs();
+    const select = document.getElementById("quotePartSelect");
+    if(select) select.value = "";
+}
+
 /* =================================
    QUOTES
 ================================= */
@@ -802,13 +845,14 @@ function saveQuotes(){
 let currentQuoteItems = [];
 
 function addQuoteItem(){
-    const desc = document.getElementById("quoteItemDescription").value;
-    const price = parseFloat(document.getElementById("quoteItemPrice").value) || 0;
-    const qty = parseInt(document.getElementById("quoteItemQty").value) || 1;
-
+    const partNumber = document.getElementById("quotePartSelect")?.value || "";
+const desc = document.getElementById("quoteItemDescription").value;
+const price = parseFloat(document.getElementById("quoteItemPrice").value) || 0;
+const qty = parseInt(document.getElementById("quoteItemQty").value) || 1;
+   
     if(!desc) return alert("Please enter a description");
 
-    const item = { description: desc, price, qty, total: price * qty };
+const item = { partNumber, description: desc, price, qty, total: price * qty };
     currentQuoteItems.push(item);
     renderQuoteItems();
     clearQuoteItemInputs();
@@ -910,6 +954,10 @@ function renderQuotes(){
 
 // Initial render
 renderQuotes();
+
+document.addEventListener("DOMContentLoaded", ()=>{
+    populatePartSelect(); // ensures quote dropdown is ready immediately
+});
 /* =================================
    INVOICES
 ================================= */
