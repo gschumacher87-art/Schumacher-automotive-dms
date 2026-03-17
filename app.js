@@ -781,6 +781,7 @@ function openQuotes(){
     document.getElementById("quotesSection").style.display = "block";
 
     renderQuotes();
+   populatePartSelect();
 }
 
 /* ===== PARTS ↔ QUOTES INTEGRATION ===== */
