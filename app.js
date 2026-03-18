@@ -957,8 +957,23 @@ function renderQuotes(){
 renderQuotes();
 
 document.addEventListener("DOMContentLoaded", ()=>{
-    populatePartSelect(); // ensures quote dropdown is ready immediately
+    // Populate parts dropdown
+    populatePartSelect();
+
+    // Populate job types dropdown
+    const jobSelect = document.getElementById("quoteJobTypeSelect");
+    if(jobSelect){
+        jobSelect.innerHTML = `<option value="">Select Job Type</option>`;
+        serviceTypes.forEach(service => {
+            const option = document.createElement("option");
+            option.value = service.id;
+            option.textContent = service.name;
+            jobSelect.appendChild(option);
+        });
+    }
 });
+
+
 /* =================================
    INVOICES
 ================================= */
