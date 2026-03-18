@@ -787,11 +787,11 @@ function openQuotes(){
 /* ===== PARTS ↔ QUOTES INTEGRATION ===== */
 
 // Auto-fill quote inputs when a part is selected
-function fillPartIntoQuote(){
+function fillPartIntoQuote() {
     const select = document.getElementById("quotePartSelect");
     const partId = parseInt(select.value);
     const part = parts.find(p => p.id === partId);
-    if(!part) return;
+    if (!part) return;
 
     document.getElementById("quoteItemDescription").value = part.description;
     document.getElementById("quoteItemPrice").value = part.price.toFixed(2);
@@ -799,9 +799,9 @@ function fillPartIntoQuote(){
 }
 
 // Populate the quotePartSelect dropdown from parts array
-function populatePartSelect(){
+function populatePartSelect() {
     const select = document.getElementById("quotePartSelect");
-    if(!select) return;
+    if (!select) return;
 
     select.innerHTML = '<option value="">--Select Part--</option>';
     parts.forEach(p => {
@@ -812,85 +812,84 @@ function populatePartSelect(){
     });
 }
 
-// Update renderParts() to call this at the end
-const originalRenderParts = renderParts;
-renderParts = function(){
-    originalRenderParts();
-    populatePartSelect();
-}
-
-// Clear inputs after adding quote item
-const originalClearQuoteItemInputs = clearQuoteItemInputs;
-clearQuoteItemInputs = function(){
-    originalClearQuoteItemInputs();
+// Clear quote part select after adding
+function clearQuotePartSelect() {
     const select = document.getElementById("quotePartSelect");
-    if(select) select.value = "";
+    if (select) select.value = "";
 }
 
 /* =================================
    QUOTES
 ================================= */
 
-function getNextQuoteNumber(){
+function getNextQuoteNumber() {
     const number = nextQuoteNumber;
     nextQuoteNumber++;
     localStorage.setItem("nextQuoteNumber", nextQuoteNumber);
     return number;
 }
 
-function saveQuotes(){
+function saveQuotes() {
     localStorage.setItem("workshopQuotes", JSON.stringify(quotes));
 }
 
 /* ===== CURRENT QUOTE ITEMS ===== */
 let currentQuoteItems = [];
-// Parts selected for the current job
-let currentJobParts = [];
+let currentJobParts = []; // parts for the current job
 
-function addQuoteItem(){
+// Add quote item (job + parts)
+function addQuoteItem() {
     const jobSelect = document.getElementById("quoteJobTypeSelect");
-    const selectedJobId = parseInt(jobSelect.value);
+    const selectedJobId = parseInt(jobSelect.value) || null;
 
-    let jobDescription = document.getElementById("quoteItemDescription").value;
-    let jobPrice = parseFloat(document.getElementById("quoteItemPrice").value) || 0;
-    const qty = parseInt(document.getElementById("quoteItemQty").value) || 1;
+    const descriptionInput = document.getElementById("quoteItemDescription");
+    const priceInput = document.getElementById("quoteItemPrice");
+    const qtyInput = document.getElementById("quoteItemQty");
 
-    if(!jobDescription) return alert("Select a job or enter description");
+    const itemDescription = descriptionInput.value.trim();
+    const itemPrice = parseFloat(priceInput.value) || 0;
+    const itemQty = parseInt(qtyInput.value) || 1;
 
-    // Compute total for all parts
-    const partsTotal = currentJobParts.reduce((sum,p)=> sum + p.price, 0);
+    if (!itemDescription && currentJobParts.length === 0) {
+        return alert("Enter a description or add at least one part");
+    }
 
-    const total = (jobPrice + partsTotal) * qty;
+    // Compute total for all attached parts
+    const partsTotal = currentJobParts.reduce((sum, p) => sum + p.price, 0);
+    const total = (itemPrice + partsTotal) * itemQty;
 
     const item = {
-        jobId: selectedJobId || null,
-        description: jobDescription,
-        price: jobPrice,
-        qty,
-        parts: [...currentJobParts], // attach parts
+        jobId: selectedJobId,
+        description: itemDescription || "Parts Only",
+        price: itemPrice,
+        qty: itemQty,
+        parts: [...currentJobParts],
         total
     };
 
     currentQuoteItems.push(item);
 
-    // Clear fields & temp parts
-    document.getElementById("quoteItemDescription").value = "";
-    document.getElementById("quoteItemPrice").value = 0;
-    document.getElementById("quoteItemQty").value = 0;
+    // Clear inputs and temp parts
+    descriptionInput.value = "";
+    priceInput.value = 0;
+    qtyInput.value = 1;
     jobSelect.value = "";
     currentJobParts = [];
+
+    const partsList = document.getElementById("currentJobPartsList");
+    if (partsList) partsList.innerHTML = "";
 
     renderQuoteItems();
 }
 
-/* ===== RENDER ITEMS ===== */
-function renderQuoteItems(){
+/* ===== RENDER QUOTE ITEMS ===== */
+function renderQuoteItems() {
     const tbody = document.getElementById("quoteItemsBody");
     tbody.innerHTML = "";
 
     let subtotal = 0;
 
-    currentQuoteItems.forEach((item,i)=>{
+    currentQuoteItems.forEach((item, i) => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${item.description}</td>
@@ -911,18 +910,18 @@ function renderQuoteItems(){
     document.getElementById("quoteGrandTotal").textContent = grandTotal.toFixed(2);
 }
 
-function removeQuoteItem(index){
-    currentQuoteItems.splice(index,1);
+function removeQuoteItem(index) {
+    currentQuoteItems.splice(index, 1);
     renderQuoteItems();
 }
 
 /* ===== SAVE QUOTE ===== */
-function saveQuote(){
-    const customerName = document.getElementById("quoteCustomerName").value;
-    const vehicle = document.getElementById("quoteVehicle").value;
+function saveQuote() {
+    const customerName = document.getElementById("quoteCustomerName").value.trim();
+    const vehicle = document.getElementById("quoteVehicle").value.trim();
 
-    if(!customerName) return alert("Enter customer name");
-    if(currentQuoteItems.length === 0) return alert("Add at least one item");
+    if (!customerName) return alert("Enter customer name");
+    if (currentQuoteItems.length === 0) return alert("Add at least one item");
 
     const subtotal = parseFloat(document.getElementById("quoteSubtotal").textContent);
     const gst = parseFloat(document.getElementById("quoteGst").textContent);
@@ -945,7 +944,6 @@ function saveQuote(){
     saveQuotes();
     renderQuotes();
 
-    // Clear current quote
     currentQuoteItems = [];
     renderQuoteItems();
     document.getElementById("quoteCustomerName").value = "";
@@ -953,13 +951,13 @@ function saveQuote(){
 }
 
 /* ===== RENDER SAVED QUOTES ===== */
-function renderQuotes(){
+function renderQuotes() {
     const table = document.getElementById("quotesTableBody");
-    if(!table) return;
+    if (!table) return;
 
     table.innerHTML = "";
 
-    quotes.forEach((q,i)=>{
+    quotes.forEach(q => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>Q${q.quoteNumber}</td>
@@ -971,64 +969,60 @@ function renderQuotes(){
     });
 }
 
-// Initial render
-renderQuotes();
-
-document.addEventListener("DOMContentLoaded", ()=>{
-    // Populate parts dropdown
-    populatePartSelect();
-
-    // Populate job types dropdown
-    const jobSelect = document.getElementById("quoteJobTypeSelect");
-    if(jobSelect){
-        jobSelect.innerHTML = `<option value="">Select Job Type</option>`;
-        serviceTypes.forEach(service => {
-            const option = document.createElement("option");
-            option.value = service.id;
-            option.textContent = service.name;
-            jobSelect.appendChild(option);
-        });
-    }
-});
-function fillJobTypeIntoQuote(){
+/* ===== FILL JOB INTO QUOTE ===== */
+function fillJobTypeIntoQuote() {
     const jobSelect = document.getElementById("quoteJobTypeSelect");
     const selectedId = parseInt(jobSelect.value);
 
     const service = serviceTypes.find(s => s.id === selectedId);
-    if(service){
+    if (service) {
         document.getElementById("quoteItemDescription").value = service.name;
         document.getElementById("quoteItemPrice").value = service.defaultRate || 0;
         document.getElementById("quoteItemQty").value = 1;
     }
 }
 
+/* ===== ADD PART TO CURRENT JOB ===== */
 function addPartToCurrentJob() {
     const partSelect = document.getElementById("quotePartSelect");
     const partId = parseInt(partSelect.value);
-    if(!partId) return alert("Select a part");
+    if (!partId) return alert("Select a part");
 
     const part = parts.find(p => p.id === partId);
-    if(!part) return;
+    if (!part) return;
 
-    // Add part to temporary current job parts
     currentJobParts.push({
         partId: part.id,
         description: part.description,
         price: part.price
     });
 
-    // Optionally, show parts in a small list below description
     const partsList = document.getElementById("currentJobPartsList");
-    if(partsList){
+    if (partsList) {
         const li = document.createElement("li");
         li.textContent = `${part.description} - $${part.price.toFixed(2)}`;
         partsList.appendChild(li);
     }
 
-    // Reset select
     partSelect.value = "";
 }
 
+/* ===== INITIALIZATION ===== */
+document.addEventListener("DOMContentLoaded", () => {
+    populatePartSelect();
+
+    // Populate job dropdown
+    const jobSelect = document.getElementById("quoteJobTypeSelect");
+    if (jobSelect) {
+        jobSelect.innerHTML = `<option value="">Select Job Type</option>`;
+        serviceTypes.forEach(service => {
+            const opt = document.createElement("option");
+            opt.value = service.id;
+            opt.textContent = service.name;
+            jobSelect.appendChild(opt);
+        });
+    }
+});
 
 /* =================================
    INVOICES
