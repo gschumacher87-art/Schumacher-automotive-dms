@@ -844,25 +844,43 @@ function saveQuotes(){
 
 /* ===== CURRENT QUOTE ITEMS ===== */
 let currentQuoteItems = [];
+// Parts selected for the current job
+let currentJobParts = [];
 
 function addQuoteItem(){
-    const partNumber = document.getElementById("quotePartSelect")?.value || "";
-const desc = document.getElementById("quoteItemDescription").value;
-const price = parseFloat(document.getElementById("quoteItemPrice").value) || 0;
-const qty = parseInt(document.getElementById("quoteItemQty").value) || 1;
-   
-    if(!desc) return alert("Please enter a description");
+    const jobSelect = document.getElementById("quoteJobTypeSelect");
+    const selectedJobId = parseInt(jobSelect.value);
 
-const item = { partNumber, description: desc, price, qty, total: price * qty };
+    let jobDescription = document.getElementById("quoteItemDescription").value;
+    let jobPrice = parseFloat(document.getElementById("quoteItemPrice").value) || 0;
+    const qty = parseInt(document.getElementById("quoteItemQty").value) || 1;
+
+    if(!jobDescription) return alert("Select a job or enter description");
+
+    // Compute total for all parts
+    const partsTotal = currentJobParts.reduce((sum,p)=> sum + p.price, 0);
+
+    const total = (jobPrice + partsTotal) * qty;
+
+    const item = {
+        jobId: selectedJobId || null,
+        description: jobDescription,
+        price: jobPrice,
+        qty,
+        parts: [...currentJobParts], // attach parts
+        total
+    };
+
     currentQuoteItems.push(item);
-    renderQuoteItems();
-    clearQuoteItemInputs();
-}
 
-function clearQuoteItemInputs(){
+    // Clear fields & temp parts
     document.getElementById("quoteItemDescription").value = "";
-    document.getElementById("quoteItemPrice").value = "";
-    document.getElementById("quoteItemQty").value = 1;
+    document.getElementById("quoteItemPrice").value = 0;
+    document.getElementById("quoteItemQty").value = 0;
+    jobSelect.value = "";
+    currentJobParts = [];
+
+    renderQuoteItems();
 }
 
 /* ===== RENDER ITEMS ===== */
@@ -982,6 +1000,33 @@ function fillJobTypeIntoQuote(){
         document.getElementById("quoteItemPrice").value = service.defaultRate || 0;
         document.getElementById("quoteItemQty").value = 1;
     }
+}
+
+function addPartToCurrentJob() {
+    const partSelect = document.getElementById("quotePartSelect");
+    const partId = parseInt(partSelect.value);
+    if(!partId) return alert("Select a part");
+
+    const part = parts.find(p => p.id === partId);
+    if(!part) return;
+
+    // Add part to temporary current job parts
+    currentJobParts.push({
+        partId: part.id,
+        description: part.description,
+        price: part.price
+    });
+
+    // Optionally, show parts in a small list below description
+    const partsList = document.getElementById("currentJobPartsList");
+    if(partsList){
+        const li = document.createElement("li");
+        li.textContent = `${part.description} - $${part.price.toFixed(2)}`;
+        partsList.appendChild(li);
+    }
+
+    // Reset select
+    partSelect.value = "";
 }
 
 
