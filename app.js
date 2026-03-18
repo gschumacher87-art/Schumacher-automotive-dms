@@ -972,6 +972,17 @@ document.addEventListener("DOMContentLoaded", ()=>{
         });
     }
 });
+function fillJobTypeIntoQuote(){
+    const jobSelect = document.getElementById("quoteJobTypeSelect");
+    const selectedId = parseInt(jobSelect.value);
+
+    const service = serviceTypes.find(s => s.id === selectedId);
+    if(service){
+        document.getElementById("quoteItemDescription").value = service.name;
+        document.getElementById("quoteItemPrice").value = service.defaultRate || 0;
+        document.getElementById("quoteItemQty").value = 1;
+    }
+}
 
 
 /* =================================
